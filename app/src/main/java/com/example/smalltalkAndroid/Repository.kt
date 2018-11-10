@@ -7,13 +7,15 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-typealias onSuccess <T> = (T) -> Unit
+typealias OnSuccess <T> = (T) -> Unit
 
-class Repository(private val serviceGenerator: ServiceGenerator) {
-    fun getResponse(intent: String, onSuccess: onSuccess<ResponseModel>) {
-        serviceGenerator.createService(ApiNetworkInterface::class.java).getResponse(intent).enqueue(callback { throwable, response ->
-            response?.body()?.let(onSuccess)
-        })
+class Repository(serviceGenerator: ServiceGenerator) {
+    private val api = serviceGenerator.createService(ApiNetworkInterface::class.java)
+    fun getResponse(intent: String, onSuccessCallback: OnSuccess<ResponseModel>) {
+        api.getResponse(intent)
+            .enqueue(callback { throwable, response ->
+                response?.body()?.let(onSuccessCallback)
+            })
     }
 
     private fun <T> callback(fn: (Throwable?, Response<T>?) -> Unit) = object : Callback<T> {
