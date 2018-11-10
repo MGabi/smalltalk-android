@@ -10,10 +10,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:textAlignment="textEnd"
+        android:fontFamily="@font/open_sans_regular"
         android:includeFontPadding="false"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
+        android:textAlignment="textEnd"
         android:textSize="20sp"
         tools:text="Abc" />
 
