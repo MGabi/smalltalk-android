@@ -1,12 +1,12 @@
-package com.example.smalltalk_android
+package com.example.smalltalkAndroid
 
 import android.app.Application
-import org.koin.standalone.StandAloneContext
+import org.koin.android.ext.android.startKoin
 
 @Suppress("unused")
 class Application : Application() {
     override fun onCreate() {
         super.onCreate()
-        StandAloneContext.startKoin(listOf(module))
+        startKoin(this, listOf(module))
     }
 }
