@@ -12,4 +12,16 @@
         <item name="titleTextColor">@color/white</item>
         <item name="android:transitionGroup">false</item>
     </style>
+
+    <style name="MessageClient">
+        <item name="android:background">@drawable/msg_client</item>
+        <item name="android:textAlignment">textEnd</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="MessageServer">
+        <item name="android:background">@drawable/msg_server</item>
+        <item name="android:textAlignment">textStart</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
 </resources>

@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
@@ -12,11 +13,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.smalltalkAndroid.R
-import com.example.smalltalkAndroid.databinding.FragmentSpeechBinding
+import com.example.smalltalkAndroid.databinding.FrSpeechBinding
 import com.example.smalltalkAndroid.disable
 import com.example.smalltalkAndroid.enable
-import com.example.smalltalkAndroid.textAnimated
+import com.example.smalltalkAndroid.feature.ItemSpacer
+import com.google.android.material.snackbar.Snackbar
 import com.mcxiaoke.koi.ext.onClick
 import com.tbruyelle.rxpermissions2.RxPermissions
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -28,13 +32,14 @@ class SpeechFragment : Fragment() {
         fun newInstance() = SpeechFragment()
     }
 
-    private lateinit var binding: FragmentSpeechBinding
+    private lateinit var binding: FrSpeechBinding
     private val viewModel: SpeechViewModel by viewModel()
     private var speechRecognizer: SpeechRecognizer? = null
     private var isRecognizerRunning = false
+    private val conversationAdapter by lazy { ConversationAdapter() }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_speech, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fr_speech, container, false)
         binding.viewModel = viewModel
         binding.setLifecycleOwner(viewLifecycleOwner)
         return binding.root
@@ -46,20 +51,23 @@ class SpeechFragment : Fragment() {
         RxPermissions(this).request(
             Manifest.permission.INTERNET,
             Manifest.permission.RECORD_AUDIO
-        ).subscribe {granted ->
-            if (granted)
-                setup()
-        }
+        )
+            .subscribe { granted ->
+                if (granted)
+                    setup()
+            }
     }
 
     private fun setup() {
-        viewModel.twOutput.value = "Say something"
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context ?: return)
         speechRecognizer?.setRecognitionListener(recognitionListener)
         binding.frSpeechSkLoader.onClick {
             it.disable()
             startVoiceRecognition()
         }
+        binding.frSpeechRw.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
+        binding.frSpeechRw.adapter = conversationAdapter
+        binding.frSpeechRw.addItemDecoration(ItemSpacer(context ?: return, R.dimen.msg_card_spacing))
     }
 
     private fun startVoiceRecognition() {
@@ -107,7 +115,7 @@ class SpeechFragment : Fragment() {
         }
 
         override fun onError(error: Int) {
-            viewModel.twOutput.value = when (error) {
+            val message = when (error) {
                 SpeechRecognizer.ERROR_AUDIO -> "Audio error"
                 SpeechRecognizer.ERROR_CLIENT -> "Client error"
                 SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Permission error"
@@ -121,14 +129,20 @@ class SpeechFragment : Fragment() {
             }
             isRecognizerRunning = false
             binding.frSpeechSkLoader.enable()
+            Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG)
         }
 
         override fun onResults(results: Bundle?) {
             val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.toList() ?: listOf()
-            viewModel.twOutput.value = matches.toString()
             isRecognizerRunning = false
+            addMessageToList(matches.first(), MessageOwner.CLIENT)
+            viewModel.getResponse(matches.first())
             binding.frSpeechSkLoader.enable()
         }
+    }
 
+    fun addMessageToList(message: String, owner: MessageOwner) {
+        conversationAdapter.addMessage(message, owner)
+        binding.frSpeechRw.smoothScrollToPosition(binding.frSpeechRw.adapter?.itemCount ?: 0)
     }
 }

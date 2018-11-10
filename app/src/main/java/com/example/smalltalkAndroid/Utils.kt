@@ -1,7 +1,11 @@
 package com.example.smalltalkAndroid
 
-import android.text.Editable
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.IntEvaluator
+import android.animation.ValueAnimator
 import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.widget.TextView
@@ -34,4 +38,57 @@ fun View.disable() {
 fun View.enable() {
     isEnabled = true
     alpha = 1f
+}
+
+fun View.hide() {
+    this.visibility = View.GONE
+}
+
+fun View.show() {
+    this.visibility = View.VISIBLE
+}
+
+fun View.hideAlpha(duration: Long = 300L) {
+    this.animate()
+        .setListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator?) {
+                super.onAnimationEnd(animation)
+                this@hideAlpha.alpha = 0f
+                this@hideAlpha.hide()
+            }
+        })
+        .setDuration(duration)
+        .alpha(0f)
+        .start()
+}
+
+fun View.showAlpha(duration: Long = 300) {
+    this@showAlpha.alpha = 0f
+    this.animate()
+        .setListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationStart(animation: Animator?) {
+                super.onAnimationStart(animation)
+                this@showAlpha.alpha = 0f
+                this@showAlpha.show()
+            }
+        })
+        .setDuration(duration)
+        .alpha(1f)
+        .start()
+}
+
+fun View.toggleView(boxHeight: Int, collapse: Boolean = true, duration: Long = 300L) {
+    val animator =
+        if (collapse)
+            ValueAnimator.ofInt(boxHeight, 0)
+        else
+            ValueAnimator.ofInt(0, boxHeight)
+    animator.setEvaluator(IntEvaluator())
+    animator.duration = duration
+    animator.interpolator = AccelerateDecelerateInterpolator()
+    animator.addUpdateListener {
+        this@toggleView.layoutParams.height = it.animatedValue as? Int ?: return@addUpdateListener
+        this@toggleView.requestLayout()
+    }
+    animator.start()
 }
