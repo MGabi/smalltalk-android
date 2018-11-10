@@ -26,7 +26,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:itemCount="3"
-            tools:listitem="@layout/rw_conversation_item">
+            tools:listitem="@layout/rw_conversation_item_server">
 
         </androidx.recyclerview.widget.RecyclerView>
 
