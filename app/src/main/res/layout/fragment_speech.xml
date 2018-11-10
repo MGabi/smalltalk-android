@@ -19,7 +19,6 @@
             android:id="@+id/fr_speech_tw_response"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@{viewModel.twOutput}"
             android:textAlignment="center"
             android:textColor="@color/black"
             android:textSize="32sp"
@@ -27,6 +26,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:textAnimated="@{viewModel.twOutput}"
             tools:text="Abc" />
 
         <com.github.ybq.android.spinkit.SpinKitView
