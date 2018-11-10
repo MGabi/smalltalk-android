@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
@@ -8,14 +10,35 @@
             type="com.example.smalltalkAndroid.feature.speech.SpeechViewModel" />
     </data>
 
-    <LinearLayout
-        android:orientation="vertical"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <TextView
+            android:id="@+id/fr_speech_tw_response"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="@{viewModel.demo}" />
-    </LinearLayout>
+            android:layout_height="wrap_content"
+            android:text="@{viewModel.twOutput}"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="32sp"
+            app:layout_constraintBottom_toTopOf="@id/fr_speech_sk_loader"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Abc" />
+
+        <com.github.ybq.android.spinkit.SpinKitView
+            android:id="@+id/fr_speech_sk_loader"
+            style="@style/SpinKitView.DoubleBounce"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:SpinKit_Color="@color/primary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias=".8" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
