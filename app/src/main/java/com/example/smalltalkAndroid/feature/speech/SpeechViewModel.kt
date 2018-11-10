@@ -1,8 +1,9 @@
 package com.example.smalltalkAndroid.feature.speech
 
-import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.smalltalkAndroid.Repository
 
-class SpeechViewModel : ViewModel() {
-    val demo = MediatorLiveData<String>()
+class SpeechViewModel(repository: Repository) : ViewModel() {
+    val demo = MutableLiveData<String>().apply { repository.getResponse("Ajutor sunt nesigur") { this.value = it.response } }
 }
