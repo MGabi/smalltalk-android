@@ -3,6 +3,7 @@ package com.example.smalltalkAndroid.feature.speech
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
@@ -58,6 +59,15 @@ class SpeechFragment : Fragment() {
                     observe()
                 }
             }
+    }
+
+    @SuppressLint("CheckResult")
+    fun callOperator() {
+        RxPermissions(this).request(Manifest.permission.CALL_PHONE).subscribe { granted ->
+            if (granted) {
+                startActivity(Intent(Intent.ACTION_CALL).apply { data = Uri.parse("tel:+40720660316") })
+            }
+        }
     }
 
     private fun observe() {
