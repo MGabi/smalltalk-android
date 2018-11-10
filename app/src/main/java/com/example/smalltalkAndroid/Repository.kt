@@ -9,9 +9,10 @@ import retrofit2.Response
 
 typealias OnSuccess <T> = (T) -> Unit
 
-class Repository(private val serviceGenerator: ServiceGenerator) {
+class Repository(serviceGenerator: ServiceGenerator) {
+    private val api = serviceGenerator.createService(ApiNetworkInterface::class.java)
     fun getResponse(intent: String, onSuccessCallback: OnSuccess<ResponseModel>) {
-        serviceGenerator.createService(ApiNetworkInterface::class.java).getResponse(intent)
+        api.getResponse(intent)
             .enqueue(callback { throwable, response ->
                 response?.body()?.let(onSuccessCallback)
             })

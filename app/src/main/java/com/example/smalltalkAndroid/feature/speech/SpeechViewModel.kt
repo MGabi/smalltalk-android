@@ -11,10 +11,8 @@ class SpeechViewModel(private val repo: Repository) : ViewModel() {
     val receivedMessageObservable = MutableLiveData<Message>()
 
     fun getResponse(message: String) {
-        repo.getResponse(message, object : OnSuccess<ResponseModel> {
-            override fun invoke(p1: ResponseModel) {
-                receivedMessageObservable.value = Message(p1.response, MessageOwner.SERVER)
-            }
-        })
+        repo.getResponse(message) {
+            receivedMessageObservable.value = Message(it.response, MessageOwner.SERVER)
+        }
     }
 }
