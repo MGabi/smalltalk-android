@@ -5,7 +5,7 @@
 
         <variable
             name="viewModel"
-            type="com.example.smalltalkAndroid.feature.MainViewModel" />
+            type="com.example.smalltalkAndroid.MainViewModel" />
     </data>
 
     <LinearLayout
