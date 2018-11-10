@@ -20,11 +20,7 @@ class SpeechFragment : Fragment() {
 
     private val viewModel: SpeechViewModel by viewModel()
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_speech, container, false)
         binding.viewModel = viewModel
         binding.setLifecycleOwner(viewLifecycleOwner)
@@ -33,6 +29,5 @@ class SpeechFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.demo.value = "HALO"
     }
 }
