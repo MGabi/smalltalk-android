@@ -4,10 +4,13 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.IntEvaluator
 import android.animation.ValueAnimator
+import android.graphics.drawable.Drawable
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
+import android.view.animation.RotateAnimation
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import androidx.lifecycle.LiveData
@@ -29,6 +32,25 @@ fun TextView.textAnimated(text: LiveData<String>) {
 
     this.startAnimation(anim)
 }
+
+var ImageView.imageAnimated: Drawable
+    get() = this.background
+    set(value) {
+        val anim = RotateAnimation(0f, 360f)
+        anim.duration = 300
+        anim.repeatCount = 1
+        anim.repeatMode = Animation.REVERSE
+
+        anim.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationEnd(animation: Animation?) {}
+            override fun onAnimationStart(animation: Animation?) {}
+            override fun onAnimationRepeat(animation: Animation?) {
+                this@imageAnimated.background = value
+            }
+        })
+
+        this.startAnimation(anim)
+    }
 
 fun View.disable() {
     isEnabled = false

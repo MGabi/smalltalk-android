@@ -12,6 +12,8 @@ import android.speech.SpeechRecognizer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.DecelerateInterpolator
+import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -19,9 +21,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.smalltalkAndroid.R
 import com.example.smalltalkAndroid.databinding.FrSpeechBinding
-import com.example.smalltalkAndroid.disable
-import com.example.smalltalkAndroid.enable
 import com.example.smalltalkAndroid.feature.ItemSpacer
+import com.example.smalltalkAndroid.hideAlpha
+import com.example.smalltalkAndroid.imageAnimated
+import com.example.smalltalkAndroid.showAlpha
 import com.google.android.material.snackbar.Snackbar
 import com.mcxiaoke.koi.ext.onClick
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -77,11 +80,38 @@ class SpeechFragment : Fragment() {
         })
     }
 
+
+    private fun doAnimation(reverse: Boolean) {
+        if (!reverse) {
+            binding.frSpeechBtnStartRecording.imageAnimated = ContextCompat.getDrawable(
+                context ?: return, R.drawable.ic_microphone_disabled
+            ) ?: return
+            binding.frSpeechBtnStartRecording.isEnabled = false
+            binding.frSpeechBtnStartRecording.animate()
+                .translationYBy(250f)
+                .setDuration(500)
+                .setInterpolator(DecelerateInterpolator())
+                .start()
+            binding.frSpeechSkLoader.showAlpha(500)
+        } else {
+            binding.frSpeechSkLoader.hideAlpha(100)
+            binding.frSpeechBtnStartRecording.imageAnimated = ContextCompat.getDrawable(
+                context ?: return, R.drawable.ic_microphone
+            ) ?: return
+            binding.frSpeechBtnStartRecording.isEnabled = true
+            binding.frSpeechBtnStartRecording.animate()
+                .translationYBy(-250f)
+                .setDuration(500)
+                .setInterpolator(DecelerateInterpolator())
+                .start()
+        }
+    }
+
     private fun setup() {
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context ?: return)
         speechRecognizer?.setRecognitionListener(recognitionListener)
-        binding.frSpeechSkLoader.onClick {
-            it.disable()
+        binding.frSpeechBtnStartRecording.onClick {
+            doAnimation(false)
             startVoiceRecognition()
         }
         binding.frSpeechRw.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
@@ -150,7 +180,7 @@ class SpeechFragment : Fragment() {
                 else -> "Error"
             }
             isRecognizerRunning = false
-            binding.frSpeechSkLoader.enable()
+            doAnimation(true)
             Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG)
         }
 
@@ -159,7 +189,7 @@ class SpeechFragment : Fragment() {
             isRecognizerRunning = false
             addMessageToList(matches.first(), MessageOwner.CLIENT)
             viewModel.getResponse(matches.first())
-            binding.frSpeechSkLoader.enable()
+            doAnimation(true)
         }
     }
 
