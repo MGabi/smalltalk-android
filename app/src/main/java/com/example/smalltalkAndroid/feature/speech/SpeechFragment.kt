@@ -1,6 +1,7 @@
 package com.example.smalltalkAndroid.feature.speech
 
 import android.Manifest
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
@@ -12,7 +13,6 @@ import android.speech.SpeechRecognizer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.DecelerateInterpolator
 import android.widget.EdgeEffect
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -24,7 +24,6 @@ import com.example.smalltalkAndroid.R
 import com.example.smalltalkAndroid.databinding.FrSpeechBinding
 import com.example.smalltalkAndroid.feature.ItemSpacer
 import com.example.smalltalkAndroid.utils.hideAlpha
-import com.example.smalltalkAndroid.utils.imageAnimated
 import com.example.smalltalkAndroid.utils.showAlpha
 import com.example.smalltalkAndroid.utils.shuffleAnimate
 import com.github.ajalt.reprint.core.AuthenticationFailureReason
@@ -90,19 +89,19 @@ class SpeechFragment : Fragment() {
     private fun doAnimation(reverse: Boolean) {
         if (!reverse) {
             binding.frSpeechBtnStartRecording.isEnabled = false
-            binding.frSpeechBtnStartRecording.animate()
-                .translationYBy(250f)
-                .setDuration(500)
-                .setInterpolator(DecelerateInterpolator())
-                .start()
-            binding.frSpeechSkLoader.showAlpha(500)
+            binding.frSpeechBubble.resumeAnimation()
         } else {
-            binding.frSpeechSkLoader.hideAlpha(100)
             binding.frSpeechBtnStartRecording.isEnabled = true
-            binding.frSpeechBtnStartRecording.animate()
-                .translationYBy(-250f)
-                .setDuration(500)
-                .setInterpolator(DecelerateInterpolator())
+            binding.frSpeechBubble.pauseAnimation()
+            resetAnimation()
+        }
+    }
+
+    private fun resetAnimation() {
+        binding.frSpeechBubble.apply {
+            ObjectAnimator
+                .ofFloat(this, "progress", this.progress, 0f)
+                .setDuration(700)
                 .start()
         }
     }
@@ -132,7 +131,7 @@ class SpeechFragment : Fragment() {
     private fun startAuthentication() {
         binding.frSpeechRw.hideAlpha(500)
         binding.frSpeechBtnStartRecording.hideAlpha(500)
-        binding.frSpeechSkLoader.hideAlpha(500)
+        binding.frSpeechBubble.hideAlpha(500)
         Handler().postDelayed({
             binding.frSpeechAuthAnimation.showAlpha(500)
             binding.frSpeechAuthAnimation.playAnimation()
@@ -144,6 +143,7 @@ class SpeechFragment : Fragment() {
                         binding.frSpeechAuthAnimation.hideAlpha(500)
                         binding.frSpeechRw.showAlpha(500)
                         binding.frSpeechBtnStartRecording.showAlpha(500)
+                        binding.frSpeechBubble.showAlpha(500)
                         Snackbar.make(binding.root, R.string.action_authorized, Snackbar.LENGTH_LONG)
                             .setAction(getString(R.string.ok)) {}
                             .show()
@@ -164,6 +164,7 @@ class SpeechFragment : Fragment() {
                             binding.frSpeechAuthAnimation.hideAlpha(500)
                             binding.frSpeechRw.showAlpha(500)
                             binding.frSpeechBtnStartRecording.showAlpha(500)
+                            binding.frSpeechBubble.showAlpha(500)
                         }
                         .show()
                 }

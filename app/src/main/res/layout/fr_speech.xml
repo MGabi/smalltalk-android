@@ -45,36 +45,40 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone"
-            app:lottie_autoPlay="false"
-            app:lottie_loop="false"
-            app:lottie_rawRes="@raw/android_fingerprint"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias=".6"/>
+            app:layout_constraintVertical_bias=".6"
+            app:lottie_autoPlay="false"
+            app:lottie_loop="false"
+            app:lottie_rawRes="@raw/android_fingerprint" />
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/fr_speech_bubble"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="@id/fr_speech_btn_start_recording"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/fr_speech_btn_start_recording"
+            app:lottie_autoPlay="false"
+            app:lottie_scale=".7"
+            app:lottie_loop="true"
+            app:lottie_progress="1"
+            app:lottie_rawRes="@raw/ripple"
+            tools:visibility="visible" />
 
         <ImageView
             android:id="@+id/fr_speech_btn_start_recording"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_marginTop="32dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:padding="16dp"
+            tools:tint="@color/appColor"
             android:src="@drawable/ic_microphone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/fr_speech_reference" />
-
-        <com.github.ybq.android.spinkit.SpinKitView
-            android:id="@+id/fr_speech_sk_loader"
-            style="@style/SpinKitView.Large.DoubleBounce"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:visibility="gone"
-            app:SpinKit_Color="@color/accentColor"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/fr_speech_rw"
-            tools:visibility="visible" />
+            app:layout_constraintTop_toBottomOf="@id/fr_speech_reference"
+            app:layout_constraintBottom_toBottomOf="parent"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
