@@ -2,15 +2,15 @@
 <resources>
     <color name="primary">#fff</color>
     <color name="primaryDark">#f6f6f6</color>
-    <color name="accentColor">#e00201</color>
+    <color name="accentColor">@color/appColor</color>
 
-    <color name="appColor">#e00201</color>
+    <color name="appColor">#ef5350</color>
     <!-- Support colors -->
     <color name="white">#fff</color>
     <color name="black">#000</color>
     <color name="gray">#ECEFF1</color>
     <color name="transparent">#00000000</color>
 
-    <color name="chat_server">#eaeaea</color>
+    <color name="chat_server">#f2f2f2</color>
     <color name="chat_user">@color/appColor</color>
 </resources>

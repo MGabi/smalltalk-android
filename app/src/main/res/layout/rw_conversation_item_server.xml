@@ -10,7 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="start"
-        android:fontFamily="@font/open_sans_regular"
+        android:fontFamily="@font/open_sans_light"
         android:includeFontPadding="false"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"

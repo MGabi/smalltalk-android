@@ -13,6 +13,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
+import android.widget.EdgeEffect
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -30,6 +31,7 @@ import com.github.ajalt.reprint.core.AuthenticationListener
 import com.github.ajalt.reprint.core.Reprint
 import com.google.android.material.snackbar.Snackbar
 import com.mcxiaoke.koi.ext.onClick
+import com.mcxiaoke.koi.ext.toast
 import com.tbruyelle.rxpermissions2.RxPermissions
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.*
@@ -58,7 +60,8 @@ class SpeechFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         RxPermissions(this).request(
             Manifest.permission.INTERNET,
-            Manifest.permission.RECORD_AUDIO
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.USE_FINGERPRINT
         )
             .subscribe { granted ->
                 if (granted) {
@@ -80,6 +83,7 @@ class SpeechFragment : Fragment() {
     private fun requireValidation() {
         Reprint.authenticate(object : AuthenticationListener {
             override fun onSuccess(moduleTag: Int) {
+                toast("auth success")
             }
 
             override fun onFailure(
@@ -89,6 +93,7 @@ class SpeechFragment : Fragment() {
                 moduleTag: Int,
                 errorCode: Int
             ) {
+                toast("auth failed")
             }
         })
     }
@@ -136,6 +141,13 @@ class SpeechFragment : Fragment() {
         binding.frSpeechRw.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         binding.frSpeechRw.adapter = conversationAdapter
         binding.frSpeechRw.addItemDecoration(ItemSpacer(context ?: return, R.dimen.msg_card_spacing))
+        binding.frSpeechRw.edgeEffectFactory = object : RecyclerView.EdgeEffectFactory() {
+            override fun createEdgeEffect(view: RecyclerView, direction: Int): EdgeEffect {
+                return EdgeEffect(view.context).apply {
+                    color = ContextCompat.getColor(context ?: return@apply, R.color.appColor)
+                }
+            }
+        }
         Handler().postDelayed({
             addMessageToList(getString(R.string.greeting_message), MessageOwner.SERVER)
         }, 500)
