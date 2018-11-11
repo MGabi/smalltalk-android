@@ -14,10 +14,10 @@ class ItemSpacer(private val context: Context, @DimenRes private val decorationH
         super.getItemOffsets(outRect, view, parent, state)
         val itemPosition = parent.getChildAdapterPosition(view)
         val decHeight = context.resources.getDimensionPixelSize(decorationHeight)
-        outRect.right = decHeight
-        outRect.left = decHeight
+        outRect.right = decHeight * 3
+        outRect.left = decHeight * 3
         outRect.bottom = decHeight
         if (itemPosition == 0)
-            outRect.top = decHeight
+            outRect.top = decHeight * 2
     }
 }

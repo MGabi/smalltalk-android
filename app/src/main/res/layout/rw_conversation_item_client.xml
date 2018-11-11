@@ -4,13 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <TextView
+    <com.example.smalltalkAndroid.utils.TypingTextView
         android:id="@+id/conversation_item"
         style="@style/MessageClient"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:fontFamily="@font/open_sans_regular"
+        android:fontFamily="@font/open_sans_light"
         android:includeFontPadding="false"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"

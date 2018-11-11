@@ -13,6 +13,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
+import android.widget.EdgeEffect
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -22,9 +23,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.smalltalkAndroid.R
 import com.example.smalltalkAndroid.databinding.FrSpeechBinding
 import com.example.smalltalkAndroid.feature.ItemSpacer
-import com.example.smalltalkAndroid.hideAlpha
-import com.example.smalltalkAndroid.imageAnimated
-import com.example.smalltalkAndroid.showAlpha
+import com.example.smalltalkAndroid.utils.hideAlpha
+import com.example.smalltalkAndroid.utils.imageAnimated
+import com.example.smalltalkAndroid.utils.showAlpha
+import com.example.smalltalkAndroid.utils.shuffleAnimate
 import com.github.ajalt.reprint.core.AuthenticationFailureReason
 import com.github.ajalt.reprint.core.AuthenticationListener
 import com.github.ajalt.reprint.core.Reprint
@@ -58,7 +60,8 @@ class SpeechFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         RxPermissions(this).request(
             Manifest.permission.INTERNET,
-            Manifest.permission.RECORD_AUDIO
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.USE_FINGERPRINT
         )
             .subscribe { granted ->
                 if (granted) {
@@ -77,17 +80,6 @@ class SpeechFragment : Fragment() {
         }
     }
 
-    private fun requireValidation() {
-        binding.fingerprintValidation.visibility = View.VISIBLE
-        Reprint.authenticate(object : AuthenticationListener {
-            override fun onSuccess(moduleTag: Int) {
-            }
-
-            override fun onFailure(failureReason: AuthenticationFailureReason?, fatal: Boolean, errorMessage: CharSequence?, moduleTag: Int, errorCode: Int) {
-            }
-        })
-    }
-
     private fun observe() {
         viewModel.receivedMessageObservable.observe(this, Observer {
             addMessageToList(it.text, it.owner)
@@ -97,9 +89,6 @@ class SpeechFragment : Fragment() {
 
     private fun doAnimation(reverse: Boolean) {
         if (!reverse) {
-            binding.frSpeechBtnStartRecording.imageAnimated = ContextCompat.getDrawable(
-                context ?: return, R.drawable.ic_microphone_disabled
-            ) ?: return
             binding.frSpeechBtnStartRecording.isEnabled = false
             binding.frSpeechBtnStartRecording.animate()
                 .translationYBy(250f)
@@ -109,9 +98,6 @@ class SpeechFragment : Fragment() {
             binding.frSpeechSkLoader.showAlpha(500)
         } else {
             binding.frSpeechSkLoader.hideAlpha(100)
-            binding.frSpeechBtnStartRecording.imageAnimated = ContextCompat.getDrawable(
-                context ?: return, R.drawable.ic_microphone
-            ) ?: return
             binding.frSpeechBtnStartRecording.isEnabled = true
             binding.frSpeechBtnStartRecording.animate()
                 .translationYBy(-250f)
@@ -131,9 +117,58 @@ class SpeechFragment : Fragment() {
         binding.frSpeechRw.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         binding.frSpeechRw.adapter = conversationAdapter
         binding.frSpeechRw.addItemDecoration(ItemSpacer(context ?: return, R.dimen.msg_card_spacing))
+        binding.frSpeechRw.edgeEffectFactory = object : RecyclerView.EdgeEffectFactory() {
+            override fun createEdgeEffect(view: RecyclerView, direction: Int): EdgeEffect {
+                return EdgeEffect(view.context).apply {
+                    color = ContextCompat.getColor(context ?: return@apply, R.color.appColor)
+                }
+            }
+        }
         Handler().postDelayed({
             addMessageToList(getString(R.string.greeting_message), MessageOwner.SERVER)
         }, 500)
+    }
+
+    private fun startAuthentication() {
+        binding.frSpeechRw.hideAlpha(500)
+        binding.frSpeechBtnStartRecording.hideAlpha(500)
+        binding.frSpeechSkLoader.hideAlpha(500)
+        Handler().postDelayed({
+            binding.frSpeechAuthAnimation.showAlpha(500)
+            binding.frSpeechAuthAnimation.playAnimation()
+            Handler().postDelayed({ binding.frSpeechAuthAnimation.pauseAnimation() }, 800)
+            Reprint.authenticate(object : AuthenticationListener {
+                override fun onSuccess(moduleTag: Int) {
+                    binding.frSpeechAuthAnimation.resumeAnimation()
+                    Handler().postDelayed({
+                        binding.frSpeechAuthAnimation.hideAlpha(500)
+                        binding.frSpeechRw.showAlpha(500)
+                        binding.frSpeechBtnStartRecording.showAlpha(500)
+                        Snackbar.make(binding.root, R.string.action_authorized, Snackbar.LENGTH_LONG)
+                            .setAction(getString(R.string.ok)) {}
+                            .show()
+                    }, 2500)
+
+                }
+
+                override fun onFailure(
+                    failureReason: AuthenticationFailureReason?,
+                    fatal: Boolean,
+                    errorMessage: CharSequence?,
+                    moduleTag: Int,
+                    errorCode: Int
+                ) {
+                    binding.frSpeechAuthAnimation.shuffleAnimate()
+                    Snackbar.make(binding.root, R.string.action_revoked, Snackbar.LENGTH_LONG)
+                        .setAction(getString(R.string.close)) {
+                            binding.frSpeechAuthAnimation.hideAlpha(500)
+                            binding.frSpeechRw.showAlpha(500)
+                            binding.frSpeechBtnStartRecording.showAlpha(500)
+                        }
+                        .show()
+                }
+            })
+        }, 550)
     }
 
     private fun startVoiceRecognition() {
@@ -165,7 +200,9 @@ class SpeechFragment : Fragment() {
         }
 
         override fun onPartialResults(partialResults: Bundle?) {
-
+//            val match = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.toList() ?: return
+//            if (match.isNotEmpty())
+//                updateLastMessage(match[0] ?: return)
         }
 
         override fun onEvent(eventType: Int, params: Bundle?) {
@@ -202,12 +239,19 @@ class SpeechFragment : Fragment() {
             val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.toList() ?: listOf()
             isRecognizerRunning = false
             addMessageToList(matches.first(), MessageOwner.CLIENT)
+            if (matches[0].contains("authenticate")) {
+                startAuthentication()
+            }
             viewModel.getResponse(matches.first())
             doAnimation(true)
         }
     }
 
-    fun addMessageToList(message: String, owner: MessageOwner) {
+    private fun updateLastMessage(partialMessage: String) {
+        conversationAdapter.updateLastMessage(partialMessage)
+    }
+
+    private fun addMessageToList(message: String, owner: MessageOwner) {
         conversationAdapter.addMessage(message, owner)
         binding.frSpeechRw.smoothScrollToPosition(binding.frSpeechRw.adapter?.itemCount ?: 0)
     }
