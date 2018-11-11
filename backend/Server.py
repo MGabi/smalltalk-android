@@ -23,7 +23,7 @@ class S(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({'message':'See you later :)'}).encode())
             S.reset = True
         if intent == 'greeting':
-            d = ["Greetings to you too!", "Hello there!", "Nice to see you!", "Hello to you too ,friend"]
+            d = ["Greetings to you too!", "Hello there!", "Nice to see you!", "Hello to you too ,friend!"]
             self._set_response()
             self.wfile.write(json.dumps({'message': d[random.randint(0, len(d) - 1)]}).encode())
             S.reset = True
@@ -33,7 +33,11 @@ class S(BaseHTTPRequestHandler):
             S.reset = True
         if intent == 'stupid':
             self._set_response()
-            self.wfile.write(json.dumps({'message': "Like my creators"}).encode())
+            self.wfile.write(json.dumps({'message': "Like my creators."}).encode())
+            S.reset = True
+        if intent == 'do':
+            self._set_response()
+            self.wfile.write(json.dumps({'message': "Lots of things: try reporting an issue to me or request a renewal of a subscription, help you through the process of a payment or warranty"}).encode())
             S.reset = True
         if intent == 'call':
             self._set_response()
@@ -69,7 +73,7 @@ class S(BaseHTTPRequestHandler):
             if type == 'phone':
                 if value == 'display':
                     self._set_response()
-                    self.wfile.write(json.dumps({"message": "Ouch! Want to call an operator or acces our service site?", "location" :{'latitude' : 23.5867319 , 'longitude' : 46.7741535}}).encode())
+                    self.wfile.write(json.dumps({"message": "Ouch! Want to call an operator or acces our service site?"}).encode())
                     S.reset = True
                 if value == 'battery':
                     self._set_response()
@@ -132,7 +136,7 @@ class S(BaseHTTPRequestHandler):
             message = get_type_repo(S.flow['intent'], S.flow['types'])
             message = ",".join(message)
             print(message)
-            self.wfile.write(json.dumps({"message": "Please select one: " + S.flow['types'] + ": " + message, "call": False}).encode())
+            self.wfile.write(json.dumps({"message": "Please select one"+": " + message, "call": False}).encode())
         return ''
     def handle_chat(self,json_msg):
         no_fields = 0
@@ -158,8 +162,11 @@ class S(BaseHTTPRequestHandler):
             self.do_reset()
             S.reset = False
         user_msg = self.get_message()
+        print(user_msg)
         if(user_msg == "reset"):
             self.do_reset()
+            self._set_response()
+            self.wfile.write(json.dumps({'message':''}).encode())
         else:
             json_msg = S.client.message(user_msg)
             self.handle_chat(json_msg)
