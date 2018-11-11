@@ -5,12 +5,15 @@ entities={
               {"bill":["water","electricity","heat"],
                "subscription":["vodafone","internet"],
                "phone": ["iphone", "samsung"]},
-            "assistance":{'phone':['display','battery']},
+            "assistance":{'phone':['display','battery'],
+                          'tablet' : ['display','battery']},
 
           "greeting":'',
             "call":'',
+            'do':'',
             "service":"",
           "location":'',
+            "stupid":'',
             "Goodbye":'',
           "test":{"testV":""}}
 def get_no_fields(intent):
