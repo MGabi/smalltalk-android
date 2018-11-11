@@ -25,6 +25,9 @@ import com.example.smalltalkAndroid.feature.ItemSpacer
 import com.example.smalltalkAndroid.hideAlpha
 import com.example.smalltalkAndroid.imageAnimated
 import com.example.smalltalkAndroid.showAlpha
+import com.github.ajalt.reprint.core.AuthenticationFailureReason
+import com.github.ajalt.reprint.core.AuthenticationListener
+import com.github.ajalt.reprint.core.Reprint
 import com.google.android.material.snackbar.Snackbar
 import com.mcxiaoke.koi.ext.onClick
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -66,12 +69,23 @@ class SpeechFragment : Fragment() {
     }
 
     @SuppressLint("CheckResult")
-    fun callOperator() {
+    private fun callOperator() {
         RxPermissions(this).request(Manifest.permission.CALL_PHONE).subscribe { granted ->
             if (granted) {
                 startActivity(Intent(Intent.ACTION_CALL).apply { data = Uri.parse("tel:+40720660316") })
             }
         }
+    }
+
+    private fun requireValidation() {
+        binding.fingerprintValidation.visibility = View.VISIBLE
+        Reprint.authenticate(object : AuthenticationListener {
+            override fun onSuccess(moduleTag: Int) {
+            }
+
+            override fun onFailure(failureReason: AuthenticationFailureReason?, fatal: Boolean, errorMessage: CharSequence?, moduleTag: Int, errorCode: Int) {
+            }
+        })
     }
 
     private fun observe() {
