@@ -47,8 +47,17 @@ class ConversationAdapter : RecyclerView.Adapter<ConversationAdapter.Conversatio
     }
 
     fun addMessage(m: String, owner: MessageOwner) {
-        messages.add(Message(m, owner))
-        notifyItemInserted(itemCount - 1)
+        if (m.toLowerCase() != "reset") {
+            if (m.isNotEmpty()) {
+                messages.add(Message(m, owner))
+                notifyItemInserted(itemCount - 1)
+            }
+        } else {
+            messages.clear()
+            lastPosition = -1
+            messages.add(Message(m, owner))
+            notifyDataSetChanged()
+        }
     }
 
     private fun setAnimation(viewToAnimate: View, position: Int) {
