@@ -48,7 +48,7 @@ dependencies {
     implementation "org.koin:koin-androidx-viewmodel:$koinVersion"
 
     implementation 'com.github.tbruyelle:rxpermissions:0.10.2'
-    implementation 'com.github.ybq:AndroidSpinKit:v1.0.0'
+    implementation 'com.github.ybq:AndroidSpinKit:v1.1.0'
     implementation 'com.mcxiaoke.koi:core:0.5.5'
 
     implementation 'com.airbnb.android:paris:1.2.0'

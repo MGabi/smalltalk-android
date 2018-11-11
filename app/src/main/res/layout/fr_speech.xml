@@ -32,10 +32,10 @@
 
         <com.github.ybq.android.spinkit.SpinKitView
             android:id="@+id/fr_speech_sk_loader"
-            style="@style/SpinKitView.DoubleBounce"
+            style="@style/SpinKitView.Large.DoubleBounce"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:SpinKit_Color="@color/primary"
+            app:SpinKit_Color="@color/accentColor"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
@@ -86,6 +87,9 @@ class SpeechFragment : Fragment() {
         binding.frSpeechRw.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         binding.frSpeechRw.adapter = conversationAdapter
         binding.frSpeechRw.addItemDecoration(ItemSpacer(context ?: return, R.dimen.msg_card_spacing))
+        Handler().postDelayed({
+            addMessageToList(getString(R.string.greeting_message), MessageOwner.SERVER)
+        }, 500)
     }
 
     private fun startVoiceRecognition() {
