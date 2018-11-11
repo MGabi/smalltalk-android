@@ -25,7 +25,6 @@ import com.example.smalltalkAndroid.R
 import com.example.smalltalkAndroid.databinding.FrSpeechBinding
 import com.example.smalltalkAndroid.feature.ItemSpacer
 import com.example.smalltalkAndroid.model.LocationParams
-import com.example.smalltalkAndroid.model.ResponseModel
 import com.example.smalltalkAndroid.utils.hideAlpha
 import com.example.smalltalkAndroid.utils.showAlpha
 import com.example.smalltalkAndroid.utils.shuffleAnimate
@@ -34,6 +33,7 @@ import com.github.ajalt.reprint.core.AuthenticationListener
 import com.github.ajalt.reprint.core.Reprint
 import com.google.android.material.snackbar.Snackbar
 import com.mapzen.speakerbox.Speakerbox
+import com.mcxiaoke.koi.ext.delayed
 import com.mcxiaoke.koi.ext.onClick
 import com.mcxiaoke.koi.ext.onTextChange
 import com.mcxiaoke.koi.ext.onTouchEvent
@@ -54,7 +54,10 @@ class SpeechFragment : Fragment() {
     private val conversationAdapter by lazy { ConversationAdapter() }
     private lateinit var speakerbox: Speakerbox
     private val ttsCallback = { text: String ->
-        speakerbox.play(text)
+        if (text.contains("\\uD"))
+            speakerbox.play(text.substringBefore("\\u"))
+        else
+            speakerbox.play(text)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -105,6 +108,14 @@ class SpeechFragment : Fragment() {
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
                 intent.setPackage("com.google.android.apps.maps")
                 Handler().postDelayed({ context?.startActivity(intent) }, (it.response.length + 4) * 50L)
+            }
+            if (it.url.isNotEmpty()) {
+                Handler().postDelayed({
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it.url))
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    intent.setPackage("com.android.chrome")
+                    startActivity(intent)
+                }, (it.response.length + 4) * 50L)
             }
         })
     }
@@ -281,5 +292,8 @@ class SpeechFragment : Fragment() {
     private fun addMessageToList(message: String, owner: MessageOwner) {
         conversationAdapter.addMessage(message, owner)
         binding.frSpeechRw.smoothScrollToPosition(binding.frSpeechRw.adapter?.itemCount ?: 0)
+        Handler().delayed((message.length + 4) * 50L) {
+            binding.frSpeechRw.smoothScrollToPosition(binding.frSpeechRw.adapter?.itemCount ?: 0)
+        }
     }
 }

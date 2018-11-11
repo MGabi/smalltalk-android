@@ -38,8 +38,12 @@ class ConversationAdapter : RecyclerView.Adapter<ConversationAdapter.Conversatio
     }
 
     override fun onBindViewHolder(holder: ConversationItemViewHolder, position: Int) {
-        holder.updateUI(messages[position])
+        holder.updateUI(messages[position], position > lastPosition)
         setAnimation(holder.itemView, position)
+    }
+
+    override fun onViewRecycled(holder: ConversationItemViewHolder) {
+        super.onViewRecycled(holder)
     }
 
     fun addMessage(m: String, owner: MessageOwner) {
@@ -66,9 +70,12 @@ class ConversationAdapter : RecyclerView.Adapter<ConversationAdapter.Conversatio
     }
 
     inner class ConversationItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        fun updateUI(message: Message) {
+        fun updateUI(message: Message, slowTyping: Boolean = true) {
             if (message.owner == MessageOwner.SERVER) {
-                itemView.conversation_item.animateText = message.content
+                if (slowTyping)
+                    itemView.conversation_item.animateText = message.content
+                else
+                    itemView.conversation_item.text = message.content
                 itemView.conversation_tts.onClick { ttsCallback.invoke(itemView.conversation_item.text.toString()) }
             } else
                 itemView.conversation_item.text = message.content
