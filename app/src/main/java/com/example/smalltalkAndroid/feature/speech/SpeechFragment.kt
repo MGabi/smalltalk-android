@@ -25,6 +25,7 @@ import com.example.smalltalkAndroid.R
 import com.example.smalltalkAndroid.databinding.FrSpeechBinding
 import com.example.smalltalkAndroid.feature.ItemSpacer
 import com.example.smalltalkAndroid.model.LocationParams
+import com.example.smalltalkAndroid.model.ResponseModel
 import com.example.smalltalkAndroid.utils.hideAlpha
 import com.example.smalltalkAndroid.utils.showAlpha
 import com.example.smalltalkAndroid.utils.shuffleAnimate
@@ -32,7 +33,9 @@ import com.github.ajalt.reprint.core.AuthenticationFailureReason
 import com.github.ajalt.reprint.core.AuthenticationListener
 import com.github.ajalt.reprint.core.Reprint
 import com.google.android.material.snackbar.Snackbar
+import com.mapzen.speakerbox.Speakerbox
 import com.mcxiaoke.koi.ext.onClick
+import com.mcxiaoke.koi.ext.onTextChange
 import com.mcxiaoke.koi.ext.onTouchEvent
 import com.tbruyelle.rxpermissions2.RxPermissions
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -49,6 +52,10 @@ class SpeechFragment : Fragment() {
     private var speechRecognizer: SpeechRecognizer? = null
     private var isRecognizerRunning = false
     private val conversationAdapter by lazy { ConversationAdapter() }
+    private lateinit var speakerbox: Speakerbox
+    private val ttsCallback = { text: String ->
+        speakerbox.play(text)
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.fr_speech, container, false)
@@ -60,6 +67,7 @@ class SpeechFragment : Fragment() {
     @SuppressLint("CheckResult")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        activity?.application?.let { speakerbox = Speakerbox(it) }
         RxPermissions(this).request(
             Manifest.permission.INTERNET,
             Manifest.permission.RECORD_AUDIO,
@@ -89,10 +97,11 @@ class SpeechFragment : Fragment() {
                 Handler().postDelayed({ startAuthentication() }, (it.response.length + 4) * 50L)
             }
             if (it.requireCall) {
-                callOperator()
+                Handler().postDelayed({ callOperator() }, (it.response.length + 4) * 50L)
             }
             if (it.locationData != LocationParams()) {
-                val uri = "geo:${it.locationData.longitude},${it.locationData.latitude}?q=${it.locationData.longitude},${it.locationData.latitude}(Vodafone Store)"
+                val uri =
+                    "geo:${it.locationData.longitude},${it.locationData.latitude}?q=${it.locationData.longitude},${it.locationData.latitude}(Vodafone Store)"
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
                 intent.setPackage("com.google.android.apps.maps")
                 Handler().postDelayed({ context?.startActivity(intent) }, (it.response.length + 4) * 50L)
@@ -129,7 +138,7 @@ class SpeechFragment : Fragment() {
             startVoiceRecognition()
         }
         binding.frSpeechRw.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-        binding.frSpeechRw.adapter = conversationAdapter
+        binding.frSpeechRw.adapter = conversationAdapter.apply { ttsCallback = this@SpeechFragment.ttsCallback }
         binding.frSpeechRw.addItemDecoration(ItemSpacer(context ?: return, R.dimen.msg_card_spacing))
         binding.frSpeechRw.edgeEffectFactory = object : RecyclerView.EdgeEffectFactory() {
             override fun createEdgeEffect(view: RecyclerView, direction: Int): EdgeEffect {
@@ -150,6 +159,9 @@ class SpeechFragment : Fragment() {
                     return@onTouchEvent true
                 }
                 false
+            }
+            onTextChange { charSequence, i, i2, i3 ->
+                this.isCursorVisible = charSequence.isNotEmpty()
             }
         }
         Handler().postDelayed({
@@ -179,7 +191,7 @@ class SpeechFragment : Fragment() {
                             .setAction(getString(R.string.ok)) {}
                             .show()
                     }, 2500)
-
+                    addMessageToList(getString(R.string.auth_confirmed), MessageOwner.SERVER)
                 }
 
                 override fun onFailure(
@@ -197,6 +209,7 @@ class SpeechFragment : Fragment() {
                             binding.frSpeechBtnStartRecording.showAlpha(500)
                             binding.frSpeechBubble.showAlpha(500)
                             binding.frSpeechEt.showAlpha(500)
+                            addMessageToList(getString(R.string.auth_revoked), MessageOwner.SERVER)
                         }
                         .show()
                 }
