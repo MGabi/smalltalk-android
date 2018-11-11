@@ -26,12 +26,12 @@ import com.example.smalltalkAndroid.feature.ItemSpacer
 import com.example.smalltalkAndroid.utils.hideAlpha
 import com.example.smalltalkAndroid.utils.imageAnimated
 import com.example.smalltalkAndroid.utils.showAlpha
+import com.example.smalltalkAndroid.utils.shuffleAnimate
 import com.github.ajalt.reprint.core.AuthenticationFailureReason
 import com.github.ajalt.reprint.core.AuthenticationListener
 import com.github.ajalt.reprint.core.Reprint
 import com.google.android.material.snackbar.Snackbar
 import com.mcxiaoke.koi.ext.onClick
-import com.mcxiaoke.koi.ext.toast
 import com.tbruyelle.rxpermissions2.RxPermissions
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.*
@@ -80,24 +80,6 @@ class SpeechFragment : Fragment() {
         }
     }
 
-    private fun requireValidation() {
-        Reprint.authenticate(object : AuthenticationListener {
-            override fun onSuccess(moduleTag: Int) {
-                toast("auth success")
-            }
-
-            override fun onFailure(
-                failureReason: AuthenticationFailureReason?,
-                fatal: Boolean,
-                errorMessage: CharSequence?,
-                moduleTag: Int,
-                errorCode: Int
-            ) {
-                toast("auth failed")
-            }
-        })
-    }
-
     private fun observe() {
         viewModel.receivedMessageObservable.observe(this, Observer {
             addMessageToList(it.text, it.owner)
@@ -107,9 +89,6 @@ class SpeechFragment : Fragment() {
 
     private fun doAnimation(reverse: Boolean) {
         if (!reverse) {
-            binding.frSpeechBtnStartRecording.imageAnimated = ContextCompat.getDrawable(
-                context ?: return, R.drawable.ic_microphone_disabled
-            ) ?: return
             binding.frSpeechBtnStartRecording.isEnabled = false
             binding.frSpeechBtnStartRecording.animate()
                 .translationYBy(250f)
@@ -119,9 +98,6 @@ class SpeechFragment : Fragment() {
             binding.frSpeechSkLoader.showAlpha(500)
         } else {
             binding.frSpeechSkLoader.hideAlpha(100)
-            binding.frSpeechBtnStartRecording.imageAnimated = ContextCompat.getDrawable(
-                context ?: return, R.drawable.ic_microphone
-            ) ?: return
             binding.frSpeechBtnStartRecording.isEnabled = true
             binding.frSpeechBtnStartRecording.animate()
                 .translationYBy(-250f)
@@ -151,6 +127,48 @@ class SpeechFragment : Fragment() {
         Handler().postDelayed({
             addMessageToList(getString(R.string.greeting_message), MessageOwner.SERVER)
         }, 500)
+    }
+
+    private fun startAuthentication() {
+        binding.frSpeechRw.hideAlpha(500)
+        binding.frSpeechBtnStartRecording.hideAlpha(500)
+        binding.frSpeechSkLoader.hideAlpha(500)
+        Handler().postDelayed({
+            binding.frSpeechAuthAnimation.showAlpha(500)
+            binding.frSpeechAuthAnimation.playAnimation()
+            Handler().postDelayed({ binding.frSpeechAuthAnimation.pauseAnimation() }, 800)
+            Reprint.authenticate(object : AuthenticationListener {
+                override fun onSuccess(moduleTag: Int) {
+                    binding.frSpeechAuthAnimation.resumeAnimation()
+                    Handler().postDelayed({
+                        binding.frSpeechAuthAnimation.hideAlpha(500)
+                        binding.frSpeechRw.showAlpha(500)
+                        binding.frSpeechBtnStartRecording.showAlpha(500)
+                        Snackbar.make(binding.root, R.string.action_authorized, Snackbar.LENGTH_LONG)
+                            .setAction(getString(R.string.ok)) {}
+                            .show()
+                    }, 2500)
+
+                }
+
+                override fun onFailure(
+                    failureReason: AuthenticationFailureReason?,
+                    fatal: Boolean,
+                    errorMessage: CharSequence?,
+                    moduleTag: Int,
+                    errorCode: Int
+                ) {
+                    binding.frSpeechAuthAnimation.shuffleAnimate()
+                    Snackbar.make(binding.root, R.string.action_revoked, Snackbar.LENGTH_LONG)
+                        .setAction(getString(R.string.close)) {
+                            binding.frSpeechAuthAnimation.hideAlpha(500)
+                            binding.frSpeechRw.showAlpha(500)
+                            binding.frSpeechBtnStartRecording.showAlpha(500)
+                        }
+                        .show()
+                }
+            })
+        }, 550)
     }
 
     private fun startVoiceRecognition() {
@@ -221,6 +239,9 @@ class SpeechFragment : Fragment() {
             val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.toList() ?: listOf()
             isRecognizerRunning = false
             addMessageToList(matches.first(), MessageOwner.CLIENT)
+            if (matches[0].contains("authenticate")) {
+                startAuthentication()
+            }
             viewModel.getResponse(matches.first())
             doAnimation(true)
         }

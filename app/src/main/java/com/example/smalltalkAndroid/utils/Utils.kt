@@ -1,9 +1,6 @@
 package com.example.smalltalkAndroid.utils
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.animation.IntEvaluator
-import android.animation.ValueAnimator
+import android.animation.*
 import android.graphics.drawable.Drawable
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
@@ -112,4 +109,11 @@ fun View.toggleView(boxHeight: Int, collapse: Boolean = true, duration: Long = 3
         this@toggleView.requestLayout()
     }
     animator.start()
+}
+
+fun View.shuffleAnimate() {
+    ObjectAnimator
+        .ofFloat(this, "translationX", 0f, 25f, -25f, 25f, -25f, 15f, -15f, 6f, -6f, 0f)
+        .setDuration(500)
+        .start()
 }

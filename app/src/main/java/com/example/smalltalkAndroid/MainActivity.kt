@@ -1,7 +1,5 @@
 package com.example.smalltalkAndroid
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -22,6 +20,7 @@ class MainActivity : AppCompatActivity() {
         binding.setLifecycleOwner(this)
         supportFragmentManager.beginTransaction()
             .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-            .replace(R.id.fragment_placeholder, SpeechFragment.newInstance()).commit()
+            .replace(R.id.fragment_placeholder, SpeechFragment.newInstance())
+            .commit()
     }
 }
