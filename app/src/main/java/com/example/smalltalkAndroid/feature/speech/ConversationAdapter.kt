@@ -54,9 +54,21 @@ class ConversationAdapter : RecyclerView.Adapter<ConversationAdapter.Conversatio
         }
     }
 
+    fun updateLastMessage(partialMessage: String) {
+        if (messages.last().owner != MessageOwner.CLIENT)
+            addMessage(partialMessage, MessageOwner.CLIENT)
+        else {
+            messages[messages.size - 1].text = partialMessage
+            notifyItemChanged(messages.size - 1)
+        }
+    }
+
     inner class ConversationItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         fun updateUI(message: Message) {
-            itemView.conversation_item.text = message.text
+            if (message.owner == MessageOwner.SERVER)
+                itemView.conversation_item.animateText = message.text
+            else
+                itemView.conversation_item.text = message.text
         }
     }
 }

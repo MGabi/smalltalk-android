@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <TextView
+    <com.example.smalltalkAndroid.utils.TypingTextView
         android:id="@+id/conversation_item"
         style="@style/MessageClient"
         android:layout_width="wrap_content"

@@ -1,4 +1,4 @@
-package com.example.smalltalkAndroid
+package com.example.smalltalkAndroid.utils
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -9,7 +9,6 @@ import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
-import android.view.animation.RotateAnimation
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
@@ -36,7 +35,7 @@ fun TextView.textAnimated(text: LiveData<String>) {
 var ImageView.imageAnimated: Drawable
     get() = this.background
     set(value) {
-        val anim = RotateAnimation(0f, 360f)
+        val anim = AlphaAnimation(1f, 0.5f)
         anim.duration = 300
         anim.repeatCount = 1
         anim.repeatMode = Animation.REVERSE

@@ -22,9 +22,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.smalltalkAndroid.R
 import com.example.smalltalkAndroid.databinding.FrSpeechBinding
 import com.example.smalltalkAndroid.feature.ItemSpacer
-import com.example.smalltalkAndroid.hideAlpha
-import com.example.smalltalkAndroid.imageAnimated
-import com.example.smalltalkAndroid.showAlpha
+import com.example.smalltalkAndroid.utils.hideAlpha
+import com.example.smalltalkAndroid.utils.imageAnimated
+import com.example.smalltalkAndroid.utils.showAlpha
 import com.github.ajalt.reprint.core.AuthenticationFailureReason
 import com.github.ajalt.reprint.core.AuthenticationListener
 import com.github.ajalt.reprint.core.Reprint
@@ -78,12 +78,17 @@ class SpeechFragment : Fragment() {
     }
 
     private fun requireValidation() {
-        binding.fingerprintValidation.visibility = View.VISIBLE
         Reprint.authenticate(object : AuthenticationListener {
             override fun onSuccess(moduleTag: Int) {
             }
 
-            override fun onFailure(failureReason: AuthenticationFailureReason?, fatal: Boolean, errorMessage: CharSequence?, moduleTag: Int, errorCode: Int) {
+            override fun onFailure(
+                failureReason: AuthenticationFailureReason?,
+                fatal: Boolean,
+                errorMessage: CharSequence?,
+                moduleTag: Int,
+                errorCode: Int
+            ) {
             }
         })
     }
@@ -165,7 +170,9 @@ class SpeechFragment : Fragment() {
         }
 
         override fun onPartialResults(partialResults: Bundle?) {
-
+//            val match = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.toList() ?: return
+//            if (match.isNotEmpty())
+//                updateLastMessage(match[0] ?: return)
         }
 
         override fun onEvent(eventType: Int, params: Bundle?) {
@@ -207,7 +214,11 @@ class SpeechFragment : Fragment() {
         }
     }
 
-    fun addMessageToList(message: String, owner: MessageOwner) {
+    private fun updateLastMessage(partialMessage: String) {
+        conversationAdapter.updateLastMessage(partialMessage)
+    }
+
+    private fun addMessageToList(message: String, owner: MessageOwner) {
         conversationAdapter.addMessage(message, owner)
         binding.frSpeechRw.smoothScrollToPosition(binding.frSpeechRw.adapter?.itemCount ?: 0)
     }
