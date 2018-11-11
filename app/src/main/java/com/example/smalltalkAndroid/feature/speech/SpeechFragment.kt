@@ -11,6 +11,7 @@ import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.view.LayoutInflater
+import android.view.MotionEvent.ACTION_UP
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EdgeEffect
@@ -23,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.smalltalkAndroid.R
 import com.example.smalltalkAndroid.databinding.FrSpeechBinding
 import com.example.smalltalkAndroid.feature.ItemSpacer
+import com.example.smalltalkAndroid.model.LocationParams
 import com.example.smalltalkAndroid.utils.hideAlpha
 import com.example.smalltalkAndroid.utils.showAlpha
 import com.example.smalltalkAndroid.utils.shuffleAnimate
@@ -31,6 +33,7 @@ import com.github.ajalt.reprint.core.AuthenticationListener
 import com.github.ajalt.reprint.core.Reprint
 import com.google.android.material.snackbar.Snackbar
 import com.mcxiaoke.koi.ext.onClick
+import com.mcxiaoke.koi.ext.onTouchEvent
 import com.tbruyelle.rxpermissions2.RxPermissions
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.*
@@ -81,7 +84,16 @@ class SpeechFragment : Fragment() {
 
     private fun observe() {
         viewModel.receivedMessageObservable.observe(this, Observer {
-            addMessageToList(it.text, it.owner)
+            addMessageToList(it.response, MessageOwner.SERVER)
+            if (it.requireValidation) {
+                Handler().postDelayed({ startAuthentication() }, 750)
+            }
+            if (it.requireCall) {
+                callOperator()
+            }
+            if (it.locationData != LocationParams()) {
+
+            }
         })
     }
 
@@ -123,6 +135,20 @@ class SpeechFragment : Fragment() {
                 }
             }
         }
+        binding.frSpeechEt.apply {
+            setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_send, 0)
+            onTouchEvent { _, motionEvent ->
+                if (motionEvent.action == ACTION_UP && motionEvent.rawX >= (this.right - this.compoundPaddingRight)) {
+                    if (this.text.isNotEmpty()) {
+                        addMessageToList(this.text.toString(), MessageOwner.CLIENT)
+                        viewModel.getResponse(this.text.toString())
+                        setText("")
+                    }
+                    return@onTouchEvent true
+                }
+                false
+            }
+        }
         Handler().postDelayed({
             addMessageToList(getString(R.string.greeting_message), MessageOwner.SERVER)
         }, 500)
@@ -132,6 +158,7 @@ class SpeechFragment : Fragment() {
         binding.frSpeechRw.hideAlpha(500)
         binding.frSpeechBtnStartRecording.hideAlpha(500)
         binding.frSpeechBubble.hideAlpha(500)
+        binding.frSpeechEt.hideAlpha(500)
         Handler().postDelayed({
             binding.frSpeechAuthAnimation.showAlpha(500)
             binding.frSpeechAuthAnimation.playAnimation()
@@ -144,6 +171,7 @@ class SpeechFragment : Fragment() {
                         binding.frSpeechRw.showAlpha(500)
                         binding.frSpeechBtnStartRecording.showAlpha(500)
                         binding.frSpeechBubble.showAlpha(500)
+                        binding.frSpeechEt.showAlpha(500)
                         Snackbar.make(binding.root, R.string.action_authorized, Snackbar.LENGTH_LONG)
                             .setAction(getString(R.string.ok)) {}
                             .show()
@@ -165,6 +193,7 @@ class SpeechFragment : Fragment() {
                             binding.frSpeechRw.showAlpha(500)
                             binding.frSpeechBtnStartRecording.showAlpha(500)
                             binding.frSpeechBubble.showAlpha(500)
+                            binding.frSpeechEt.showAlpha(500)
                         }
                         .show()
                 }
@@ -240,9 +269,6 @@ class SpeechFragment : Fragment() {
             val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.toList() ?: listOf()
             isRecognizerRunning = false
             addMessageToList(matches.first(), MessageOwner.CLIENT)
-            if (matches[0].contains("authenticate")) {
-                startAuthentication()
-            }
             viewModel.getResponse(matches.first())
             doAnimation(true)
         }

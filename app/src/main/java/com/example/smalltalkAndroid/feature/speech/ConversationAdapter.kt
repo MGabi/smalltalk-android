@@ -58,7 +58,7 @@ class ConversationAdapter : RecyclerView.Adapter<ConversationAdapter.Conversatio
         if (messages.last().owner != MessageOwner.CLIENT)
             addMessage(partialMessage, MessageOwner.CLIENT)
         else {
-            messages[messages.size - 1].text = partialMessage
+            messages[messages.size - 1].content = partialMessage
             notifyItemChanged(messages.size - 1)
         }
     }
@@ -66,9 +66,9 @@ class ConversationAdapter : RecyclerView.Adapter<ConversationAdapter.Conversatio
     inner class ConversationItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         fun updateUI(message: Message) {
             if (message.owner == MessageOwner.SERVER)
-                itemView.conversation_item.animateText = message.text
+                itemView.conversation_item.animateText = message.content
             else
-                itemView.conversation_item.text = message.text
+                itemView.conversation_item.text = message.content
         }
     }
 }
