@@ -86,13 +86,16 @@ class SpeechFragment : Fragment() {
         viewModel.receivedMessageObservable.observe(this, Observer {
             addMessageToList(it.response, MessageOwner.SERVER)
             if (it.requireValidation) {
-                Handler().postDelayed({ startAuthentication() }, 750)
+                Handler().postDelayed({ startAuthentication() }, (it.response.length + 4) * 50L)
             }
             if (it.requireCall) {
                 callOperator()
             }
             if (it.locationData != LocationParams()) {
-
+                val uri = "geo:${it.locationData.longitude},${it.locationData.latitude}?q=${it.locationData.longitude},${it.locationData.latitude}(Vodafone Store)"
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
+                intent.setPackage("com.google.android.apps.maps")
+                Handler().postDelayed({ context?.startActivity(intent) }, (it.response.length + 4) * 50L)
             }
         })
     }
@@ -217,35 +220,19 @@ class SpeechFragment : Fragment() {
     }
 
     private val recognitionListener = object : RecognitionListener {
-        override fun onReadyForSpeech(params: Bundle?) {
+        override fun onReadyForSpeech(params: Bundle?) {}
 
-        }
+        override fun onRmsChanged(rmsdB: Float) {}
 
-        override fun onRmsChanged(rmsdB: Float) {
+        override fun onBufferReceived(buffer: ByteArray?) {}
 
-        }
+        override fun onPartialResults(partialResults: Bundle?) {}
 
-        override fun onBufferReceived(buffer: ByteArray?) {
+        override fun onEvent(eventType: Int, params: Bundle?) {}
 
-        }
+        override fun onBeginningOfSpeech() {}
 
-        override fun onPartialResults(partialResults: Bundle?) {
-//            val match = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.toList() ?: return
-//            if (match.isNotEmpty())
-//                updateLastMessage(match[0] ?: return)
-        }
-
-        override fun onEvent(eventType: Int, params: Bundle?) {
-
-        }
-
-        override fun onBeginningOfSpeech() {
-
-        }
-
-        override fun onEndOfSpeech() {
-
-        }
+        override fun onEndOfSpeech() {}
 
         override fun onError(error: Int) {
             val message = when (error) {
