@@ -1,13 +1,16 @@
 package com.example.smalltalkAndroid.utils
 
 import android.animation.*
+import android.app.Activity
 import android.graphics.drawable.Drawable
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
+import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.BindingAdapter
 import androidx.lifecycle.LiveData
 
@@ -109,6 +112,17 @@ fun View.toggleView(boxHeight: Int, collapse: Boolean = true, duration: Long = 3
         this@toggleView.requestLayout()
     }
     animator.start()
+}
+
+fun AppCompatActivity.hideKeyboard() {
+    val imm = this.getSystemService(Activity.INPUT_METHOD_SERVICE)
+    //Find the currently focused view, so we can grab the correct window token from it.
+    var view = this.currentFocus
+    //If no view currently has focus, create a new one, just so we can grab a window token from it
+    if (view == null) {
+        view = View(this)
+    }
+    (imm as InputMethodManager).hideSoftInputFromWindow(view.windowToken, 0)
 }
 
 fun View.shuffleAnimate() {

@@ -2,7 +2,10 @@
     <string name="app_name">SmallTalk</string>
     <string name="greeting_message">Hello! How can I help you?</string>
     <string name="action_authorized">Your action has been authorized!</string>
+    <string name="auth_confirmed">All good 😉</string>
+    <string name="auth_revoked">Are you sure this is YOUR phone ?!? 😡</string>
     <string name="action_revoked">Authentication failed, please try again!</string>
     <string name="close">Close</string>
     <string name="ok">OK</string>
+    <string name="hint">Type something...</string>
 </resources>

@@ -7,6 +7,7 @@ import android.view.animation.AnimationUtils
 import androidx.recyclerview.widget.RecyclerView
 import com.example.smalltalkAndroid.R
 import com.example.smalltalkAndroid.model.Message
+import com.mcxiaoke.koi.ext.onClick
 import kotlinx.android.synthetic.main.rw_conversation_item_server.view.*
 
 
@@ -16,6 +17,7 @@ class ConversationAdapter : RecyclerView.Adapter<ConversationAdapter.Conversatio
 
     private val messages = mutableListOf<Message>()
     private var lastPosition = -1
+    var ttsCallback: (String) -> Unit = {}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ConversationItemViewHolder {
         val v = LayoutInflater.from(parent.context).inflate(
@@ -36,8 +38,12 @@ class ConversationAdapter : RecyclerView.Adapter<ConversationAdapter.Conversatio
     }
 
     override fun onBindViewHolder(holder: ConversationItemViewHolder, position: Int) {
-        holder.updateUI(messages[position])
+        holder.updateUI(messages[position], position > lastPosition)
         setAnimation(holder.itemView, position)
+    }
+
+    override fun onViewRecycled(holder: ConversationItemViewHolder) {
+        super.onViewRecycled(holder)
     }
 
     fun addMessage(m: String, owner: MessageOwner) {
@@ -58,17 +64,21 @@ class ConversationAdapter : RecyclerView.Adapter<ConversationAdapter.Conversatio
         if (messages.last().owner != MessageOwner.CLIENT)
             addMessage(partialMessage, MessageOwner.CLIENT)
         else {
-            messages[messages.size - 1].text = partialMessage
+            messages[messages.size - 1].content = partialMessage
             notifyItemChanged(messages.size - 1)
         }
     }
 
     inner class ConversationItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        fun updateUI(message: Message) {
-            if (message.owner == MessageOwner.SERVER)
-                itemView.conversation_item.animateText = message.text
-            else
-                itemView.conversation_item.text = message.text
+        fun updateUI(message: Message, slowTyping: Boolean = true) {
+            if (message.owner == MessageOwner.SERVER) {
+                if (slowTyping)
+                    itemView.conversation_item.animateText = message.content
+                else
+                    itemView.conversation_item.text = message.content
+                itemView.conversation_tts.onClick { ttsCallback.invoke(itemView.conversation_item.text.toString()) }
+            } else
+                itemView.conversation_item.text = message.content
         }
     }
 }

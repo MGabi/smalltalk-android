@@ -1,6 +1,7 @@
 package com.example.smalltalkAndroid.feature.speech
 
 import android.Manifest
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
@@ -10,9 +11,9 @@ import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.view.LayoutInflater
+import android.view.MotionEvent.ACTION_UP
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.DecelerateInterpolator
 import android.widget.EdgeEffect
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -23,15 +24,19 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.smalltalkAndroid.R
 import com.example.smalltalkAndroid.databinding.FrSpeechBinding
 import com.example.smalltalkAndroid.feature.ItemSpacer
+import com.example.smalltalkAndroid.model.LocationParams
 import com.example.smalltalkAndroid.utils.hideAlpha
-import com.example.smalltalkAndroid.utils.imageAnimated
 import com.example.smalltalkAndroid.utils.showAlpha
 import com.example.smalltalkAndroid.utils.shuffleAnimate
 import com.github.ajalt.reprint.core.AuthenticationFailureReason
 import com.github.ajalt.reprint.core.AuthenticationListener
 import com.github.ajalt.reprint.core.Reprint
 import com.google.android.material.snackbar.Snackbar
+import com.mapzen.speakerbox.Speakerbox
+import com.mcxiaoke.koi.ext.delayed
 import com.mcxiaoke.koi.ext.onClick
+import com.mcxiaoke.koi.ext.onTextChange
+import com.mcxiaoke.koi.ext.onTouchEvent
 import com.tbruyelle.rxpermissions2.RxPermissions
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.*
@@ -47,6 +52,13 @@ class SpeechFragment : Fragment() {
     private var speechRecognizer: SpeechRecognizer? = null
     private var isRecognizerRunning = false
     private val conversationAdapter by lazy { ConversationAdapter() }
+    private lateinit var speakerbox: Speakerbox
+    private val ttsCallback = { text: String ->
+        if (text.contains("\\uD"))
+            speakerbox.play(text.substringBefore("\\u"))
+        else
+            speakerbox.play(text)
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.fr_speech, container, false)
@@ -58,6 +70,7 @@ class SpeechFragment : Fragment() {
     @SuppressLint("CheckResult")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        activity?.application?.let { speakerbox = Speakerbox(it) }
         RxPermissions(this).request(
             Manifest.permission.INTERNET,
             Manifest.permission.RECORD_AUDIO,
@@ -82,7 +95,28 @@ class SpeechFragment : Fragment() {
 
     private fun observe() {
         viewModel.receivedMessageObservable.observe(this, Observer {
-            addMessageToList(it.text, it.owner)
+            addMessageToList(it.response, MessageOwner.SERVER)
+            if (it.requireValidation) {
+                Handler().postDelayed({ startAuthentication() }, (it.response.length + 4) * 50L)
+            }
+            if (it.requireCall) {
+                Handler().postDelayed({ callOperator() }, (it.response.length + 4) * 50L)
+            }
+            if (it.locationData != LocationParams()) {
+                val uri =
+                    "geo:${it.locationData.longitude},${it.locationData.latitude}?q=${it.locationData.longitude},${it.locationData.latitude}(Vodafone Store)"
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
+                intent.setPackage("com.google.android.apps.maps")
+                Handler().postDelayed({ context?.startActivity(intent) }, (it.response.length + 4) * 50L)
+            }
+            if (it.url.isNotEmpty()) {
+                Handler().postDelayed({
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it.url))
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    intent.setPackage("com.android.chrome")
+                    startActivity(intent)
+                }, (it.response.length + 4) * 50L)
+            }
         })
     }
 
@@ -90,19 +124,19 @@ class SpeechFragment : Fragment() {
     private fun doAnimation(reverse: Boolean) {
         if (!reverse) {
             binding.frSpeechBtnStartRecording.isEnabled = false
-            binding.frSpeechBtnStartRecording.animate()
-                .translationYBy(250f)
-                .setDuration(500)
-                .setInterpolator(DecelerateInterpolator())
-                .start()
-            binding.frSpeechSkLoader.showAlpha(500)
+            binding.frSpeechBubble.resumeAnimation()
         } else {
-            binding.frSpeechSkLoader.hideAlpha(100)
             binding.frSpeechBtnStartRecording.isEnabled = true
-            binding.frSpeechBtnStartRecording.animate()
-                .translationYBy(-250f)
-                .setDuration(500)
-                .setInterpolator(DecelerateInterpolator())
+            binding.frSpeechBubble.pauseAnimation()
+            resetAnimation()
+        }
+    }
+
+    private fun resetAnimation() {
+        binding.frSpeechBubble.apply {
+            ObjectAnimator
+                .ofFloat(this, "progress", this.progress, 0f)
+                .setDuration(700)
                 .start()
         }
     }
@@ -115,13 +149,30 @@ class SpeechFragment : Fragment() {
             startVoiceRecognition()
         }
         binding.frSpeechRw.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-        binding.frSpeechRw.adapter = conversationAdapter
+        binding.frSpeechRw.adapter = conversationAdapter.apply { ttsCallback = this@SpeechFragment.ttsCallback }
         binding.frSpeechRw.addItemDecoration(ItemSpacer(context ?: return, R.dimen.msg_card_spacing))
         binding.frSpeechRw.edgeEffectFactory = object : RecyclerView.EdgeEffectFactory() {
             override fun createEdgeEffect(view: RecyclerView, direction: Int): EdgeEffect {
                 return EdgeEffect(view.context).apply {
                     color = ContextCompat.getColor(context ?: return@apply, R.color.appColor)
                 }
+            }
+        }
+        binding.frSpeechEt.apply {
+            setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_send, 0)
+            onTouchEvent { _, motionEvent ->
+                if (motionEvent.action == ACTION_UP && motionEvent.rawX >= (this.right - this.compoundPaddingRight)) {
+                    if (this.text.isNotEmpty()) {
+                        addMessageToList(this.text.toString(), MessageOwner.CLIENT)
+                        viewModel.getResponse(this.text.toString())
+                        setText("")
+                    }
+                    return@onTouchEvent true
+                }
+                false
+            }
+            onTextChange { charSequence, i, i2, i3 ->
+                this.isCursorVisible = charSequence.isNotEmpty()
             }
         }
         Handler().postDelayed({
@@ -132,7 +183,8 @@ class SpeechFragment : Fragment() {
     private fun startAuthentication() {
         binding.frSpeechRw.hideAlpha(500)
         binding.frSpeechBtnStartRecording.hideAlpha(500)
-        binding.frSpeechSkLoader.hideAlpha(500)
+        binding.frSpeechBubble.hideAlpha(500)
+        binding.frSpeechEt.hideAlpha(500)
         Handler().postDelayed({
             binding.frSpeechAuthAnimation.showAlpha(500)
             binding.frSpeechAuthAnimation.playAnimation()
@@ -144,11 +196,13 @@ class SpeechFragment : Fragment() {
                         binding.frSpeechAuthAnimation.hideAlpha(500)
                         binding.frSpeechRw.showAlpha(500)
                         binding.frSpeechBtnStartRecording.showAlpha(500)
+                        binding.frSpeechBubble.showAlpha(500)
+                        binding.frSpeechEt.showAlpha(500)
                         Snackbar.make(binding.root, R.string.action_authorized, Snackbar.LENGTH_LONG)
                             .setAction(getString(R.string.ok)) {}
                             .show()
                     }, 2500)
-
+                    addMessageToList(getString(R.string.auth_confirmed), MessageOwner.SERVER)
                 }
 
                 override fun onFailure(
@@ -164,6 +218,9 @@ class SpeechFragment : Fragment() {
                             binding.frSpeechAuthAnimation.hideAlpha(500)
                             binding.frSpeechRw.showAlpha(500)
                             binding.frSpeechBtnStartRecording.showAlpha(500)
+                            binding.frSpeechBubble.showAlpha(500)
+                            binding.frSpeechEt.showAlpha(500)
+                            addMessageToList(getString(R.string.auth_revoked), MessageOwner.SERVER)
                         }
                         .show()
                 }
@@ -187,35 +244,19 @@ class SpeechFragment : Fragment() {
     }
 
     private val recognitionListener = object : RecognitionListener {
-        override fun onReadyForSpeech(params: Bundle?) {
+        override fun onReadyForSpeech(params: Bundle?) {}
 
-        }
+        override fun onRmsChanged(rmsdB: Float) {}
 
-        override fun onRmsChanged(rmsdB: Float) {
+        override fun onBufferReceived(buffer: ByteArray?) {}
 
-        }
+        override fun onPartialResults(partialResults: Bundle?) {}
 
-        override fun onBufferReceived(buffer: ByteArray?) {
+        override fun onEvent(eventType: Int, params: Bundle?) {}
 
-        }
+        override fun onBeginningOfSpeech() {}
 
-        override fun onPartialResults(partialResults: Bundle?) {
-//            val match = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.toList() ?: return
-//            if (match.isNotEmpty())
-//                updateLastMessage(match[0] ?: return)
-        }
-
-        override fun onEvent(eventType: Int, params: Bundle?) {
-
-        }
-
-        override fun onBeginningOfSpeech() {
-
-        }
-
-        override fun onEndOfSpeech() {
-
-        }
+        override fun onEndOfSpeech() {}
 
         override fun onError(error: Int) {
             val message = when (error) {
@@ -239,9 +280,6 @@ class SpeechFragment : Fragment() {
             val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.toList() ?: listOf()
             isRecognizerRunning = false
             addMessageToList(matches.first(), MessageOwner.CLIENT)
-            if (matches[0].contains("authenticate")) {
-                startAuthentication()
-            }
             viewModel.getResponse(matches.first())
             doAnimation(true)
         }
@@ -254,5 +292,8 @@ class SpeechFragment : Fragment() {
     private fun addMessageToList(message: String, owner: MessageOwner) {
         conversationAdapter.addMessage(message, owner)
         binding.frSpeechRw.smoothScrollToPosition(binding.frSpeechRw.adapter?.itemCount ?: 0)
+        Handler().delayed((message.length + 4) * 50L) {
+            binding.frSpeechRw.smoothScrollToPosition(binding.frSpeechRw.adapter?.itemCount ?: 0)
+        }
     }
 }
