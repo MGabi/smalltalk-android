@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SmallTalk</string>
+    <string name="greeting_message">Hello! How can I help you?</string>
 </resources>

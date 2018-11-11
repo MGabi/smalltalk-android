@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#e00201</color>
+    <color name="primary">#fff</color>
     <color name="primaryDark">#f6f6f6</color>
+    <color name="accentColor">#e00201</color>
+
+    <color name="appColor">#e00201</color>
     <!-- Support colors -->
     <color name="white">#fff</color>
     <color name="black">#000</color>
@@ -9,5 +12,5 @@
     <color name="transparent">#00000000</color>
 
     <color name="chat_server">#eaeaea</color>
-    <color name="chat_user">@color/primary</color>
+    <color name="chat_user">@color/appColor</color>
 </resources>
