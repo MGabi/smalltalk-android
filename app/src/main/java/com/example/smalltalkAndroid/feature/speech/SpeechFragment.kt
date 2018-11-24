@@ -52,12 +52,12 @@ class SpeechFragment : Fragment() {
     private var speechRecognizer: SpeechRecognizer? = null
     private var isRecognizerRunning = false
     private val conversationAdapter by lazy { ConversationAdapter() }
-    private lateinit var speakerbox: Speakerbox
+    private lateinit var speakerBox: Speakerbox
     private val ttsCallback = { text: String ->
         if (text.contains("\\uD"))
-            speakerbox.play(text.substringBefore("\\u"))
+            speakerBox.play(text.substringBefore("\\u"))
         else
-            speakerbox.play(text)
+            speakerBox.play(text)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -70,18 +70,14 @@ class SpeechFragment : Fragment() {
     @SuppressLint("CheckResult")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        activity?.application?.let { speakerbox = Speakerbox(it) }
-        RxPermissions(this).request(
-            Manifest.permission.INTERNET,
-            Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.USE_FINGERPRINT
-        )
-            .subscribe { granted ->
-                if (granted) {
-                    setup()
-                    observe()
-                }
+        activity?.application?.let { speakerBox = Speakerbox(it) }
+        @Suppress("DEPRECATION")
+        RxPermissions(this).request(Manifest.permission.INTERNET, Manifest.permission.RECORD_AUDIO, Manifest.permission.USE_FINGERPRINT).subscribe { granted ->
+            if (granted) {
+                setup()
+                observe()
             }
+        }
     }
 
     @SuppressLint("CheckResult")
@@ -104,7 +100,7 @@ class SpeechFragment : Fragment() {
             }
             if (it.locationData != LocationParams()) {
                 val uri =
-                    "geo:${it.locationData.longitude},${it.locationData.latitude}?q=${it.locationData.longitude},${it.locationData.latitude}(Vodafone Store)"
+                    "geo:${it.locationData.longitude},${it.locationData.latitude}?q=${it.locationData.longitude},${it.locationData.latitude}(${it.locationData.name})"
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
                 intent.setPackage("com.google.android.apps.maps")
                 Handler().postDelayed({ context?.startActivity(intent) }, (it.response.length + 4) * 50L)
@@ -121,25 +117,16 @@ class SpeechFragment : Fragment() {
     }
 
 
-    private fun doAnimation(reverse: Boolean) {
-        if (!reverse) {
-            binding.frSpeechBtnStartRecording.isEnabled = false
-            binding.frSpeechBubble.resumeAnimation()
-        } else {
-            binding.frSpeechBtnStartRecording.isEnabled = true
-            binding.frSpeechBubble.pauseAnimation()
-            resetAnimation()
-        }
+    private fun doAnimation(reverse: Boolean) = if (!reverse) {
+        binding.frSpeechBtnStartRecording.isEnabled = false
+        binding.frSpeechBubble.resumeAnimation()
+    } else {
+        binding.frSpeechBtnStartRecording.isEnabled = true
+        binding.frSpeechBubble.pauseAnimation()
+        resetAnimation()
     }
 
-    private fun resetAnimation() {
-        binding.frSpeechBubble.apply {
-            ObjectAnimator
-                .ofFloat(this, "progress", this.progress, 0f)
-                .setDuration(700)
-                .start()
-        }
-    }
+    private fun resetAnimation() = binding.frSpeechBubble.run { ObjectAnimator.ofFloat(this, "progress", this.progress, 0f).setDuration(700).start() }
 
     private fun setup() {
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context ?: return)
@@ -149,7 +136,7 @@ class SpeechFragment : Fragment() {
             startVoiceRecognition()
         }
         binding.frSpeechRw.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-        binding.frSpeechRw.adapter = conversationAdapter.apply { ttsCallback = this@SpeechFragment.ttsCallback }
+        binding.frSpeechRw.adapter = conversationAdapter.apply { textToSpeechCallback = this@SpeechFragment.ttsCallback }
         binding.frSpeechRw.addItemDecoration(ItemSpacer(context ?: return, R.dimen.msg_card_spacing))
         binding.frSpeechRw.edgeEffectFactory = object : RecyclerView.EdgeEffectFactory() {
             override fun createEdgeEffect(view: RecyclerView, direction: Int): EdgeEffect {
@@ -171,7 +158,7 @@ class SpeechFragment : Fragment() {
                 }
                 false
             }
-            onTextChange { charSequence, i, i2, i3 ->
+            onTextChange { charSequence, _, _, _ ->
                 this.isCursorVisible = charSequence.isNotEmpty()
             }
         }
@@ -277,16 +264,12 @@ class SpeechFragment : Fragment() {
         }
 
         override fun onResults(results: Bundle?) {
-            val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.toList() ?: listOf()
+            val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.toList() ?: emptyList()
             isRecognizerRunning = false
             addMessageToList(matches.first(), MessageOwner.CLIENT)
             viewModel.getResponse(matches.first())
             doAnimation(true)
         }
-    }
-
-    private fun updateLastMessage(partialMessage: String) {
-        conversationAdapter.updateLastMessage(partialMessage)
     }
 
     private fun addMessageToList(message: String, owner: MessageOwner) {

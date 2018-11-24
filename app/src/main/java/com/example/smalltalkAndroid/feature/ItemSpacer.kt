@@ -7,8 +7,7 @@ import androidx.annotation.DimenRes
 import androidx.recyclerview.widget.RecyclerView
 
 
-class ItemSpacer(private val context: Context, @DimenRes private val decorationHeight: Int) :
-    RecyclerView.ItemDecoration() {
+class ItemSpacer(private val context: Context, @DimenRes private val decorationHeight: Int) : RecyclerView.ItemDecoration() {
 
     override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
         super.getItemOffsets(outRect, view, parent, state)

@@ -17,7 +17,7 @@ class ConversationAdapter : RecyclerView.Adapter<ConversationAdapter.Conversatio
 
     private val messages = mutableListOf<Message>()
     private var lastPosition = -1
-    var ttsCallback: (String) -> Unit = {}
+    var textToSpeechCallback: (String) -> Unit = {}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ConversationItemViewHolder {
         val v = LayoutInflater.from(parent.context).inflate(
@@ -33,20 +33,15 @@ class ConversationAdapter : RecyclerView.Adapter<ConversationAdapter.Conversatio
 
     override fun getItemCount() = messages.count()
 
-    override fun getItemViewType(position: Int): Int {
-        return if (messages[position].owner == MessageOwner.SERVER) 0 else 1
-    }
+    override fun getItemViewType(position: Int): Int = if (messages[position].owner == MessageOwner.SERVER) 0 else 1
 
     override fun onBindViewHolder(holder: ConversationItemViewHolder, position: Int) {
         holder.updateUI(messages[position], position > lastPosition)
         setAnimation(holder.itemView, position)
     }
 
-    override fun onViewRecycled(holder: ConversationItemViewHolder) {
-        super.onViewRecycled(holder)
-    }
-
     fun addMessage(m: String, owner: MessageOwner) {
+        // TODO do we still need the reset tricky?
         if (m.toLowerCase() != "reset") {
             if (m.isNotEmpty()) {
                 messages.add(Message(m, owner))
@@ -69,15 +64,6 @@ class ConversationAdapter : RecyclerView.Adapter<ConversationAdapter.Conversatio
         }
     }
 
-    fun updateLastMessage(partialMessage: String) {
-        if (messages.last().owner != MessageOwner.CLIENT)
-            addMessage(partialMessage, MessageOwner.CLIENT)
-        else {
-            messages[messages.size - 1].content = partialMessage
-            notifyItemChanged(messages.size - 1)
-        }
-    }
-
     inner class ConversationItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         fun updateUI(message: Message, slowTyping: Boolean = true) {
             if (message.owner == MessageOwner.SERVER) {
@@ -85,7 +71,7 @@ class ConversationAdapter : RecyclerView.Adapter<ConversationAdapter.Conversatio
                     itemView.conversation_item.animateText = message.content
                 else
                     itemView.conversation_item.text = message.content
-                itemView.conversation_tts.onClick { ttsCallback.invoke(itemView.conversation_item.text.toString()) }
+                itemView.conversation_tts.onClick { textToSpeechCallback.invoke(itemView.conversation_item.text.toString()) }
             } else
                 itemView.conversation_item.text = message.content
         }

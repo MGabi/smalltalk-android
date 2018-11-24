@@ -3,11 +3,10 @@ package com.example.smalltalkAndroid.utils
 import android.content.Context
 import android.os.Handler
 import android.util.AttributeSet
-import android.widget.TextView
+import androidx.appcompat.widget.AppCompatTextView
 
 
-class TypingTextView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
-    TextView(context, attrs) {
+class TypingTextView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : AppCompatTextView(context, attrs) {
 
     private var textToBeAnimated: CharSequence = ""
     private var mIndex: Int = 0
@@ -31,16 +30,5 @@ class TypingTextView @JvmOverloads constructor(context: Context, attrs: Attribut
             text = ""
             mHandler.removeCallbacks(characterAdder)
             mHandler.postDelayed(characterAdder, characterDelay)
-        }
-
-    var animateTextContinuous: CharSequence
-        get() = text
-        set(value) {
-            if (value.isNotEmpty()) {
-                mIndex = if (textToBeAnimated.isEmpty()) 0 else textToBeAnimated.length - 1
-                textToBeAnimated = value
-                mHandler.removeCallbacks(characterAdder)
-                mHandler.postDelayed(characterAdder, characterDelay)
-            }
         }
 }
