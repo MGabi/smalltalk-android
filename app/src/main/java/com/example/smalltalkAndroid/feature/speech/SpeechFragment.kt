@@ -21,9 +21,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.smalltalkAndroid.MainActivity
 import com.example.smalltalkAndroid.R
 import com.example.smalltalkAndroid.databinding.FrSpeechBinding
 import com.example.smalltalkAndroid.feature.ItemSpacer
+import com.example.smalltalkAndroid.feature.products.ProductsFragment
 import com.example.smalltalkAndroid.model.LocationParams
 import com.example.smalltalkAndroid.utils.hideAlpha
 import com.example.smalltalkAndroid.utils.showAlpha
@@ -111,6 +113,12 @@ class SpeechFragment : Fragment() {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     intent.setPackage("com.android.chrome")
                     startActivity(intent)
+                }, (it.response.length + 4) * 50L)
+            }
+            if (it.productsIntent) {
+                //TODO handle if the products list is empty
+                Handler().postDelayed({
+                    (requireActivity() as MainActivity).startFragment(ProductsFragment.newInstance(it.products), true)
                 }, (it.response.length + 4) * 50L)
             }
         })

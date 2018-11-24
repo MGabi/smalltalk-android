@@ -1,6 +1,5 @@
 package com.example.smalltalkAndroid
 
-import com.example.smalltalkAndroid.model.ResponseModel
 import com.example.smalltalkAndroid.networking.ServiceGenerator
 import retrofit2.Call
 import retrofit2.Callback
@@ -9,7 +8,7 @@ import retrofit2.Response
 typealias OnResponse <T> = (T) -> Unit
 
 class Repository(private val serviceGenerator: ServiceGenerator) {
-    fun getResponse(intent: String, onResponse: OnResponse<ResponseModel>, onError: OnResponse<Throwable>) {
+    fun getResponse(intent: String, onResponse: OnResponse<com.example.smalltalkAndroid.model.Response>, onError: OnResponse<Throwable>) {
         serviceGenerator.service.getResponse(intent.toLowerCase()).enqueue(callback { throwable, response ->
             response?.body()?.let(onResponse)
             throwable?.let(onError)

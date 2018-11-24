@@ -8,4 +8,6 @@
     <string name="close">Close</string>
     <string name="ok">OK</string>
     <string name="hint">Type something…</string>
+    <string name="no_items_added_to_the_wishlist">No items added to the wishlist</string>
+    <string name="product_image">Product image</string>
 </resources>
