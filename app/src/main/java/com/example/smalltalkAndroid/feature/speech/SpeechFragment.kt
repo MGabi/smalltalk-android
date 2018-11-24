@@ -74,7 +74,11 @@ class SpeechFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         activity?.application?.let { speakerBox = Speakerbox(it) }
         @Suppress("DEPRECATION")
-        RxPermissions(this).request(Manifest.permission.INTERNET, Manifest.permission.RECORD_AUDIO, Manifest.permission.USE_FINGERPRINT).subscribe { granted ->
+        RxPermissions(this).request(
+            Manifest.permission.INTERNET,
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.USE_FINGERPRINT
+        ).subscribe { granted ->
             if (granted) {
                 setup()
                 observe()
@@ -134,7 +138,9 @@ class SpeechFragment : Fragment() {
         resetAnimation()
     }
 
-    private fun resetAnimation() = binding.frSpeechBubble.run { ObjectAnimator.ofFloat(this, "progress", this.progress, 0f).setDuration(700).start() }
+    private fun resetAnimation() = binding.frSpeechBubble.run {
+        ObjectAnimator.ofFloat(this, "progress", this.progress, 0f).setDuration(700).start()
+    }
 
     private fun setup() {
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context ?: return)

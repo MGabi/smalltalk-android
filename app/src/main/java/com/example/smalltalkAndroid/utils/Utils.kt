@@ -3,7 +3,19 @@ package com.example.smalltalkAndroid.utils
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.view.View
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat.getSystemService
+import com.example.smalltalkAndroid.MainActivity
+import com.example.smalltalkAndroid.R
+import com.google.firebase.messaging.RemoteMessage
 
 fun View.hide() {
     this.visibility = View.GONE
@@ -47,4 +59,37 @@ fun View.shuffleAnimate() {
         .ofFloat(this, "translationX", 0f, 25f, -25f, 25f, -25f, 15f, -15f, 6f, -6f, 0f)
         .setDuration(500)
         .start()
+}
+
+fun sendNotification(context: Context, remoteMessage: RemoteMessage) {
+    val notificationId = 100
+    val chanelId = "chanelid"
+    val intent = Intent(context, MainActivity::class.java)
+    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+    val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // you must create a notification channel for API 26 and Above
+        val name = "Smalltalk Channel"
+        val description = "Smalltalk channel description "
+        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val channel = NotificationChannel(chanelId, name, importance)
+        channel.description = description
+        val notificationManager = getSystemService(context, NotificationManager::class.java)
+        notificationManager?.createNotificationChannel(channel)
+    }
+
+    val mBuilder = NotificationCompat.Builder(context, chanelId)
+        .setSmallIcon(R.drawable.ic_announcement)
+        .setContentTitle(remoteMessage.data["title"])
+        .setContentText(remoteMessage.data["content"])
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        .setContentIntent(pendingIntent)
+        .setAutoCancel(true) // cancel the notification when clicked
+        .addAction(
+            R.drawable.ic_announcement,
+            "YES",
+            pendingIntent
+        )
+
+    val notificationManager = NotificationManagerCompat.from(context)
+    notificationManager.notify(notificationId, mBuilder.build())
 }
