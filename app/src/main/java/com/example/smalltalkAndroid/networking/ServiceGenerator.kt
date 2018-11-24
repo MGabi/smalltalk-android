@@ -10,7 +10,9 @@ class ServiceGenerator {
         private const val URL = "http://192.168.1.25:8080"
     }
 
-    fun <S> createService(serviceClass: Class<S>): S =
+    val service = createService(ApiNetworkInterface::class.java)
+
+    private fun <S> createService(serviceClass: Class<S>): S =
         Retrofit.Builder().baseUrl(URL).addConverterFactory(MoshiConverterFactory.create()).client(
             OkHttpClient.Builder().addInterceptor(
                 HttpLoggingInterceptor().setLevel(

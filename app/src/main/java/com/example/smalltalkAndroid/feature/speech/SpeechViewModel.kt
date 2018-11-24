@@ -4,10 +4,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.smalltalkAndroid.Repository
 import com.example.smalltalkAndroid.model.ResponseModel
-import java.lang.Exception
-import kotlin.random.Random
 
 class SpeechViewModel(private val repo: Repository) : ViewModel() {
+
     val receivedMessageObservable = MutableLiveData<ResponseModel>()
 
     private val failResponses = listOf(
@@ -16,16 +15,9 @@ class SpeechViewModel(private val repo: Repository) : ViewModel() {
     )
 
     fun getResponse(message: String) {
-        repo.getResponse(message, {
-            receivedMessageObservable.value = it
-        }, {
-            val msg = try {
-                failResponses.shuffled().first()
-            }catch (ex: Exception) {
-                ex.printStackTrace()
-                "Sorry, something went wrong in my mind \uD83D\uDE2F"
-            }
-            receivedMessageObservable.value = ResponseModel(msg)
-        })
+        repo.getResponse(
+            message,
+            onResponse = { receivedMessageObservable.value = it },
+            onError = { receivedMessageObservable.value = ResponseModel(failResponses.shuffled().first()) })
     }
 }
