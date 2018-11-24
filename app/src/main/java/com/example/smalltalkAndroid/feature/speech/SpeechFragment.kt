@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.smalltalkAndroid.R
 import com.example.smalltalkAndroid.databinding.FrSpeechBinding
 import com.example.smalltalkAndroid.feature.ItemSpacer
+import com.example.smalltalkAndroid.model.LocationParams
 import com.example.smalltalkAndroid.utils.hideAlpha
 import com.example.smalltalkAndroid.utils.showAlpha
 import com.example.smalltalkAndroid.utils.shuffleAnimate
@@ -72,11 +73,11 @@ class SpeechFragment : Fragment() {
         activity?.application?.let { speakerBox = Speakerbox(it) }
         @Suppress("DEPRECATION")
         RxPermissions(this).request(Manifest.permission.INTERNET, Manifest.permission.RECORD_AUDIO, Manifest.permission.USE_FINGERPRINT).subscribe { granted ->
-                if (granted) {
-                    setup()
-                    observe()
-                }
+            if (granted) {
+                setup()
+                observe()
             }
+        }
     }
 
     @SuppressLint("CheckResult")
@@ -96,6 +97,13 @@ class SpeechFragment : Fragment() {
             }
             if (it.requireCall) {
                 Handler().postDelayed({ callOperator() }, (it.response.length + 4) * 50L)
+            }
+            if (it.locationData != LocationParams()) {
+                val uri =
+                    "geo:${it.locationData.longitude},${it.locationData.latitude}?q=${it.locationData.longitude},${it.locationData.latitude}(${it.locationData.name})"
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
+                intent.setPackage("com.google.android.apps.maps")
+                Handler().postDelayed({ context?.startActivity(intent) }, (it.response.length + 4) * 50L)
             }
             if (it.url.isNotEmpty()) {
                 Handler().postDelayed({
