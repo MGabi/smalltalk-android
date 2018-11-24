@@ -1,8 +1,8 @@
-package com.example.smalltalkAndroid.feature.cloud_messaging
+package com.example.smalltalkAndroid.feature.cloudMessaging
 
+import com.example.smalltalkAndroid.utils.sendNotification
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import com.example.smalltalkAndroid.utils.sendNotification
 
 
 class SmalltalkMessagingService : FirebaseMessagingService() {

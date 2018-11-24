@@ -15,18 +15,17 @@ import android.view.MotionEvent.ACTION_UP
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EdgeEffect
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.smalltalkAndroid.MainActivity
 import com.example.smalltalkAndroid.R
 import com.example.smalltalkAndroid.databinding.FrSpeechBinding
 import com.example.smalltalkAndroid.feature.ItemSpacer
-import com.example.smalltalkAndroid.feature.cloud_messaging.SmalltalkMessagingService
+import com.example.smalltalkAndroid.feature.products.ProductsFragment
 import com.example.smalltalkAndroid.model.LocationParams
 import com.example.smalltalkAndroid.utils.hideAlpha
 import com.example.smalltalkAndroid.utils.showAlpha
@@ -120,6 +119,12 @@ class SpeechFragment : Fragment() {
                     startActivity(intent)
                 }, (it.response.length + 4) * 50L)
             }
+            if (it.productsIntent) {
+                //TODO handle if the products list is empty
+                Handler().postDelayed({
+                    (requireActivity() as MainActivity).startFragment(ProductsFragment.newInstance(it.products), true)
+                }, (it.response.length + 4) * 50L)
+            }
         })
     }
 
@@ -145,8 +150,7 @@ class SpeechFragment : Fragment() {
             startVoiceRecognition()
         }
         binding.frSpeechRw.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-        binding.frSpeechRw.adapter =
-                conversationAdapter.apply { textToSpeechCallback = this@SpeechFragment.ttsCallback }
+        binding.frSpeechRw.adapter = conversationAdapter.apply { textToSpeechCallback = this@SpeechFragment.ttsCallback }
         binding.frSpeechRw.addItemDecoration(ItemSpacer(context ?: return, R.dimen.msg_card_spacing))
         binding.frSpeechRw.edgeEffectFactory = object : RecyclerView.EdgeEffectFactory() {
             override fun createEdgeEffect(view: RecyclerView, direction: Int): EdgeEffect {

@@ -63,7 +63,7 @@ fun View.shuffleAnimate() {
 
 fun sendNotification(context: Context, remoteMessage: RemoteMessage) {
     val notificationId = 100
-    val chanelid = "chanelid"
+    val chanelId = "chanelid"
     val intent = Intent(context, MainActivity::class.java)
     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
     val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
@@ -71,13 +71,13 @@ fun sendNotification(context: Context, remoteMessage: RemoteMessage) {
         val name = "Smalltalk Channel"
         val description = "Smalltalk channel description "
         val importance = NotificationManager.IMPORTANCE_DEFAULT
-        val channel = NotificationChannel(chanelid, name, importance)
+        val channel = NotificationChannel(chanelId, name, importance)
         channel.description = description
         val notificationManager = getSystemService(context, NotificationManager::class.java)
         notificationManager?.createNotificationChannel(channel)
     }
 
-    val mBuilder = NotificationCompat.Builder(context, chanelid)
+    val mBuilder = NotificationCompat.Builder(context, chanelId)
         .setSmallIcon(R.drawable.ic_announcement)
         .setContentTitle(remoteMessage.data["title"])
         .setContentText(remoteMessage.data["content"])

@@ -3,6 +3,7 @@ package com.example.smalltalkAndroid
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import com.example.smalltalkAndroid.databinding.ActivityMainBinding
 import com.example.smalltalkAndroid.feature.speech.SpeechFragment
@@ -18,9 +19,14 @@ class MainActivity : AppCompatActivity() {
         binding.toolbar.title = "SmallTalk"
         binding.viewModel = viewModel
         binding.setLifecycleOwner(this)
-        supportFragmentManager.beginTransaction()
-            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-            .replace(R.id.fragment_placeholder, SpeechFragment.newInstance())
-            .commit()
+        startFragment(SpeechFragment.newInstance(), false)
+    }
+
+    fun startFragment(fragment: Fragment, isAddToBackStack: Boolean) {
+        supportFragmentManager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).also {
+            if (isAddToBackStack) {
+                it.addToBackStack(null)
+            }
+        }.replace(R.id.fragment_placeholder, fragment).commit()
     }
 }

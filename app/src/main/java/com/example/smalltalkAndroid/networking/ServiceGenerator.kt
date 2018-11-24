@@ -8,21 +8,9 @@ import retrofit2.create
 
 class ServiceGenerator {
     companion object {
-        private const val URL = "http://www.google.ro"
+        private const val URL = "http://0.0.0.0"
     }
 
-    val service: ApiNetworkInterface
-
-    init {
-        service = Retrofit.Builder()
-            .baseUrl(URL)
-            .addConverterFactory(MoshiConverterFactory.create())
-            .client(
-                OkHttpClient.Builder()
-                    .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
-                    .build()
-            )
-            .build()
-            .create()
-    }
+    val service: ApiNetworkInterface = Retrofit.Builder().baseUrl(URL).addConverterFactory(MoshiConverterFactory.create())
+        .client(OkHttpClient.Builder().addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)).build()).build().create()
 }

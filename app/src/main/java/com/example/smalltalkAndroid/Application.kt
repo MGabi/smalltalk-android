@@ -1,10 +1,6 @@
 package com.example.smalltalkAndroid
 
 import android.app.Application
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import com.example.smalltalkAndroid.feature.cloud_messaging.SmalltalkMessagingService
-import com.example.smalltalkAndroid.utils.sendNotification
 import com.github.ajalt.reprint.core.Reprint
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.iid.FirebaseInstanceId
