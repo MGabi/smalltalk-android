@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import com.example.smalltalkAndroid.Repository
 import com.example.smalltalkAndroid.model.ResponseModel
 
-class SpeechViewModel(private val repo: Repository) : ViewModel() {
+class SpeechViewModel(val repo: Repository) : ViewModel() {
 
     val receivedMessageObservable = MutableLiveData<ResponseModel>()
 

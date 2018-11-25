@@ -3,6 +3,7 @@ package com.example.smalltalkAndroid.feature.speech
 import android.Manifest
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -14,6 +15,7 @@ import android.view.LayoutInflater
 import android.view.MotionEvent.ACTION_UP
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.EdgeEffect
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -105,8 +107,7 @@ class SpeechFragment : Fragment() {
                 Handler().postDelayed({ callOperator() }, (it.response.length + 4) * 50L)
             }
             if (it.locationData != LocationParams()) {
-                val uri =
-                    "geo:${it.locationData.longitude},${it.locationData.latitude}?q=${it.locationData.longitude},${it.locationData.latitude}(${it.locationData.name})"
+                val uri = "geo:${it.locationData.longitude},${it.locationData.latitude}?q=${it.locationData.longitude},${it.locationData.latitude}(${it.locationData.name})"
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
                 intent.setPackage("com.google.android.apps.maps")
                 Handler().postDelayed({ context?.startActivity(intent) }, (it.response.length + 4) * 50L)
@@ -121,9 +122,10 @@ class SpeechFragment : Fragment() {
             }
             if (it.productsIntent) {
                 //TODO handle if the products list is empty
+                (requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(binding.frSpeechEt.windowToken, 0)
                 Handler().postDelayed({
                     (requireActivity() as MainActivity).startFragment(ProductsFragment.newInstance(it.products), true)
-                }, (it.response.length + 4) * 50L)
+                }, (it.response.length + 8) * 50L)
             }
         })
     }
@@ -182,6 +184,7 @@ class SpeechFragment : Fragment() {
     }
 
     private fun startAuthentication() {
+        (requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(binding.frSpeechEt.windowToken, 0)
         binding.frSpeechRw.hideAlpha(500)
         binding.frSpeechBtnStartRecording.hideAlpha(500)
         binding.frSpeechBubble.hideAlpha(500)
@@ -192,6 +195,7 @@ class SpeechFragment : Fragment() {
             Handler().postDelayed({ binding.frSpeechAuthAnimation.pauseAnimation() }, 800)
             Reprint.authenticate(object : AuthenticationListener {
                 override fun onSuccess(moduleTag: Int) {
+                    viewModel.repo.confirmFinger()
                     binding.frSpeechAuthAnimation.resumeAnimation()
                     Handler().postDelayed({
                         binding.frSpeechAuthAnimation.hideAlpha(500)

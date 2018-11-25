@@ -6,6 +6,6 @@ data class ProductItemViewModel(private val product: Product) {
     val id: Int = product.id
     val name: String = product.name
     val imageUrl: String = product.imageUrl
-    var isBuy: Boolean = product.isBuy
-    var isWishlist: Boolean = product.isWishlist
+    var isBuy: Boolean = product.isBuy == 1
+    var isWishlist: Boolean = product.isWishlist == 1
 }

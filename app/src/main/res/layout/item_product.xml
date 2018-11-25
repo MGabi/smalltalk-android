@@ -42,12 +42,13 @@
             android:layout_height="wrap_content"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/add_to_cart"
-            android:padding="@dimen/half_content_padding"
-            tools:src="@drawable/ic_add_shopping_cart_black_48dp"
+            android:padding="12dp"
+            android:tint="@color/accentColor"
             app:isBuy="@{safeUnbox(viewModel.isBuy())}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@drawable/ic_add_shopping_cart_black_48dp" />
 
         <ImageButton
             android:id="@+id/wishlist_button"
@@ -55,12 +56,13 @@
             android:layout_height="wrap_content"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/add_to_wishlist"
-            android:padding="@dimen/half_content_padding"
-            tools:src="@drawable/ic_favorite_border_black_48dp"
+            android:padding="12dp"
+            android:tint="@color/accentColor"
             app:isWishlist="@{safeUnbox(viewModel.isWishlist())}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/buy_button"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@drawable/ic_favorite_border_black_48dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
