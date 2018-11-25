@@ -9,6 +9,7 @@ data class Product(
     @field:Json(name = "id") val id: Int,
     @field:Json(name = "name") val name: String,
     @field:Json(name = "image") val imageUrl: String,
+    @field:Json(name = "price") val price: Int,
     @field:Json(name = "is_wishlist") val isWishlist: Int,
     @field:Json(name = "is_cart") val isBuy: Int
 ) : Parcelable
