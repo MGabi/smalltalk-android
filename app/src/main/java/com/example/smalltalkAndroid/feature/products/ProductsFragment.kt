@@ -30,13 +30,27 @@ class ProductsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.viewModel = viewModel
         binding.setLifecycleOwner(viewLifecycleOwner)
-        val productsAdapter = ProductsAdapter()
+        val productsAdapter = ProductsAdapter { id, state, isWishlistButton ->
+            //TODO update the item state on the backend
+            if (isWishlistButton) {
+                if (state) {
+
+                } else {
+
+                }
+            } else {
+                if (state) {
+
+                } else {
+
+                }
+            }
+        }
         binding.productsRecyclerView.run {
             adapter = productsAdapter
             layoutManager = LinearLayoutManager(context)
         }
-        viewModel.products.observe(viewLifecycleOwner, Observer {
-            productsAdapter.submitList(it)
-        })
+        arguments?.products?.let { viewModel.products.value = it }
+        viewModel.products.observe(viewLifecycleOwner, Observer { productsAdapter.submitList(it) })
     }
 }
