@@ -84,11 +84,6 @@ fun sendNotification(context: Context, remoteMessage: RemoteMessage) {
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         .setContentIntent(pendingIntent)
         .setAutoCancel(true) // cancel the notification when clicked
-        .addAction(
-            R.drawable.ic_announcement,
-            "YES",
-            pendingIntent
-        )
 
     val notificationManager = NotificationManagerCompat.from(context)
     notificationManager.notify(notificationId, mBuilder.build())
