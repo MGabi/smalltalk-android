@@ -8,7 +8,7 @@ import retrofit2.create
 
 class ServiceGenerator {
     companion object {
-        private const val URL = "http://0.0.0.0"
+        private const val URL = "http://192.168.166.147:8000"
     }
 
     val service: ApiNetworkInterface = Retrofit.Builder().baseUrl(URL).addConverterFactory(MoshiConverterFactory.create())
