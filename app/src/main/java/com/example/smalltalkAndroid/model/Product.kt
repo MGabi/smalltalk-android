@@ -8,7 +8,7 @@ import kotlinx.android.parcel.Parcelize
 data class Product(
     @field:Json(name = "id") val id: Int,
     @field:Json(name = "name") val name: String,
-    @field:Json(name = "image_url") val imageUrl: String,
-    @field:Json(name = "is_wishlist") val isWishlist: Boolean,
-    @field:Json(name = "is_buy") val isBuy: Boolean
+    @field:Json(name = "image") val imageUrl: String,
+    @field:Json(name = "is_wishlist") val isWishlist: Int,
+    @field:Json(name = "is_cart") val isBuy: Int
 ) : Parcelable

@@ -49,6 +49,8 @@ class ProductsAdapter(private val onClick: ItemClickListener) : ListAdapter<Prod
 
         fun setModel(product: Product) {
             binding.viewModel = ProductItemViewModel(product)
+            binding.wishlistButton.isWishlist(product.isWishlist == 1)
+            binding.buyButton.isBuy(product.isBuy == 1)
         }
     }
 }

@@ -23,10 +23,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun startFragment(fragment: Fragment, isAddToBackStack: Boolean) {
-        supportFragmentManager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).also {
+        supportFragmentManager.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).also {
             if (isAddToBackStack) {
                 it.addToBackStack(null)
             }
-        }.replace(R.id.fragment_placeholder, fragment).commit()
+        }.add(R.id.fragment_placeholder, fragment).commit()
     }
 }

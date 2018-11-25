@@ -33,17 +33,9 @@ class ProductsFragment : Fragment() {
         val productsAdapter = ProductsAdapter { id, state, isWishlistButton ->
             //TODO update the item state on the backend
             if (isWishlistButton) {
-                if (state) {
-
-                } else {
-
-                }
+                viewModel.repository.setWishlist(id, !state)
             } else {
-                if (state) {
-
-                } else {
-
-                }
+                viewModel.repository.setCart(id, !state)
             }
         }
         binding.productsRecyclerView.run {
